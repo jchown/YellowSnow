@@ -1,7 +1,11 @@
 import 'dart:io';
 
+import 'package:YellowSnow/annotate_git.dart';
+import 'package:YellowSnow/workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+
+import 'annotations.dart';
 
 void main() {
   runApp(MyApp());
@@ -53,22 +57,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> lines;
+  Workspace workspace;
+  Annotations annotations;
 
   final ScrollController linesViewController = ScrollController();
 
   _MyHomePageState(String filename) {
-    var file = File(filename);
-    file.readAsString().then((fileContent) => setLines(fileContent));
-    lines = List<String>();
-    lines.add("Loading $filename");
+    workspace = Workspace.pending();
+    annotations = Annotations.pending();
+    load(filename);
   }
 
-  void setLines(String fileContent) {
+  Future<void> load(String filename) async {
+    var newWorkspace = await Workspace.find(filename);
+    stdout.writeln("Workspace: ${newWorkspace.rootDir}");
+    var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
+
     setState(() {
-      lines = new List<String>();
-      for (var line in fileContent.split("\n"))
-        lines.add(line);
+      workspace = newWorkspace;
+      annotations = newAnnotations;
     });
   }
 
@@ -93,10 +100,10 @@ class _MyHomePageState extends State<MyHomePage> {
           alwaysVisibleScrollThumb: true,
           controller: linesViewController,
           child: ListView.builder(
-            itemCount: lines.length,
+            itemCount: annotations.lines.length,
             controller: linesViewController,
             itemBuilder: (context, i) {
-              return Text(lines[i],
+              return Text(annotations.lines[i].text,
               style: TextStyle(fontFamily: 'RobotoMono'));
             }
           ),
