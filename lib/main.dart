@@ -4,8 +4,11 @@ import 'package:YellowSnow/annotate_git.dart';
 import 'package:YellowSnow/workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'annotations.dart';
+import 'themes.dart';
+import 'theme.dart' as Theme;
 
 void main() {
   runApp(MyApp());
@@ -18,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Yellow Snow',
       theme: ThemeData(
-        // This is the theme of your application.
+        // This is the theme.dart of your application.
         //
         // Try running your application with "flutter run". You'll see the
         // application has a blue toolbar. Then, without quitting the app, try
@@ -59,23 +62,28 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Workspace workspace;
   Annotations annotations;
+  Theme.Theme theme;
 
   final ScrollController linesViewController = ScrollController();
 
   _MyHomePageState(String filename) {
     workspace = Workspace.pending();
     annotations = Annotations.pending();
+    theme = null;
     load(filename);
   }
 
   Future<void> load(String filename) async {
+    var prefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
     stdout.writeln("Workspace: ${newWorkspace.rootDir}");
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
+    var newTheme = Themes.get(await prefs);
 
     setState(() {
       workspace = newWorkspace;
       annotations = newAnnotations;
+      theme = newTheme;
     });
   }
 
@@ -103,8 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
             itemCount: annotations.lines.length,
             controller: linesViewController,
             itemBuilder: (context, i) {
-              return Text(annotations.lines[i].text,
-              style: TextStyle(fontFamily: 'RobotoMono'));
+              return annotations.lines[i].getWidget(annotations, theme);
             }
           ),
         ),

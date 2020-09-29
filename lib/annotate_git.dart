@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:YellowSnow/annotations_file.dart';
+import 'package:YellowSnow/line.dart';
 
 import 'exec.dart';
 import 'line_file.dart';
@@ -25,7 +26,7 @@ class AnnotateGit {
         program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
     var source = await File(filename).readAsLines();
-    var lines = new List<Line>();
+    var lines = new List<LineFile>();
     String editor = "", editorEmail = "";
     int time = 0;
 

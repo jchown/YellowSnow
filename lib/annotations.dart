@@ -1,18 +1,13 @@
 
-/// Base class of an annotated line
-abstract class Line {
-  int timestamp;
-
-  String get text;
-}
+import 'line.dart';
 
 /// Base class of a list of annotated lines
 abstract class Annotations
 {
   String getSummary(int line);
 
-  int getLevel(int line) {
-    return _timeToLevel[_lines[line].timestamp];
+  int getLevel(int timestamp) {
+    return _timeToLevel[timestamp];
   }
 
   List<Line> get lines => _lines;
@@ -73,10 +68,10 @@ abstract class Annotations
 /*
   public string GetHTML()
   {
-    var theme = Themes.Selected;
+    var theme.dart = Themes.Selected;
     var html = new StringBuilder("<html>");
     html.Append("<head><style>\n");
-    html.Append(string.Format("body {{ background-color: {0}; color: {1}; }}\n", ToHtml(theme.bgOld), ToHtml(theme.fgNew)));
+    html.Append(string.Format("body {{ background-color: {0}; color: {1}; }}\n", ToHtml(theme.dart.bgOld), ToHtml(theme.dart.fgNew)));
     html.Append(string.Format(".line {{  white-space: pre; font-family: Courier; width:100%; font-size: {0}pt; }}\n", Font.PointSize));
 
     for (int i = 0; i < 256; i++)
