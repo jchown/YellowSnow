@@ -1,4 +1,3 @@
-import 'package:YellowSnow/line.dart';
 import 'package:YellowSnow/line_file.dart';
 
 import 'annotations.dart';

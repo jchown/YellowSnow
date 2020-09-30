@@ -18,22 +18,32 @@ class LineFile extends Line {
   @override
   Widget getWidget(Annotations annotations, Theme theme) {
     int level = annotations.getLevel(timestamp);
+    var bgCol = theme.getBGColor(level);
+    var fgCol = theme.getFGColor(level);
     return Row(children: <Widget>[
       SizedBox(
           width: 160,
-          child: Text(author,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                  fontFamily: 'RobotoMono',
-                  backgroundColor: theme.getBGColor(0),
-                  color: theme.getFGColor(0)))),
-      Text(source,
-          maxLines: 1,
-          style: TextStyle(
-              fontFamily: 'RobotoMono',
-              backgroundColor: theme.getBGColor(level),
-              color: theme.getFGColor(level)))
+          child: Container(
+              color: bgCol,
+              width: double.infinity,
+              child: Text(author,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                      fontFamily: 'RobotoMono',
+                      backgroundColor: bgCol,
+                      color: fgCol)))),
+      new Expanded(
+          child: Container(
+              color: bgCol,
+              width: double.infinity,
+              child: Text(source,
+                  maxLines: 1,
+                  textWidthBasis: TextWidthBasis.parent,
+                  style: TextStyle(
+                      fontFamily: 'RobotoMono',
+                      backgroundColor: bgCol,
+                      color: fgCol)))),
     ]);
   }
 }

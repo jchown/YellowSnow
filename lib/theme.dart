@@ -27,6 +27,9 @@ class Theme {
   }
 
   Color getColor(int level, Color from, Color to) {
+    assert(level >= 0);
+    assert(level <= 255);
+
     double dR = (to.red - from.red).toDouble();
     double dG = (to.green - from.green).toDouble();
     double dB = (to.blue - from.blue).toDouble();

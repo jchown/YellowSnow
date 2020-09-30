@@ -11,10 +11,10 @@ import 'themes.dart';
 import 'theme.dart' as Theme;
 
 void main() {
-  runApp(MyApp());
+  runApp(YellowSnowApp());
 }
 
-class MyApp extends StatelessWidget {
+class YellowSnowApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -24,38 +24,30 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(
-          filename: 'S:\\Work\\Dominators\\src\\main\\kotlin\\League.kt'),
+      home: MainPage(
+//          filename: 'S:\\Work\\vTime\\mvr.api\\src\\main\\java\\starship\\mvr\\model\\db\\FriendsDB.java'),
+          filename: "S:\\Work\\vTime\\vTag-Android\\bin\\prebuild.xml"),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.filename}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class MainPage extends StatefulWidget {
+  MainPage({Key key, this.filename}) : super(key: key);
 
   final String filename;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState(filename);
+  _MainPageState createState() => _MainPageState(filename);
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainPageState extends State<MainPage> {
   Workspace workspace;
   Annotations annotations;
   Theme.Theme theme;
 
   final ScrollController linesViewController = ScrollController();
 
-  _MyHomePageState(String filename) {
+  _MainPageState(String filename) {
     workspace = Workspace.pending();
     annotations = Annotations.pending();
     theme = null;
@@ -96,12 +88,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: Text('Yellow Snow'),
                 onTap: () {
                   setTheme("YS");
+                  Navigator.pop(context);
                 },
               ),
               ListTile(
                 title: Text('Purple Stain'),
                 onTap: () {
                   setTheme("PS");
+                  Navigator.pop(context);
                 },
               )
             ],
@@ -127,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: DraggableScrollbar.rrect(
+        child: DraggableScrollbar.semicircle(
           alwaysVisibleScrollThumb: true,
           controller: linesViewController,
           child: ListView.builder(

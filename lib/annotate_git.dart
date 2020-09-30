@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:YellowSnow/annotations_file.dart';
-import 'package:YellowSnow/line.dart';
 
 import 'exec.dart';
 import 'line_file.dart';
@@ -11,19 +10,15 @@ import 'annotations.dart';
 class AnnotateGit {
   static const String program = "git";
 
-  static Future<Annotations> getAnnotations(Workspace workspace, String filename) async
-  {
+  static Future<Annotations> getAnnotations(
+      Workspace workspace, String filename) async {
     var relFN = workspace.getRelativePath(filename);
     stdout.writeln("Filename: $filename -> $relFN");
 
-    List<String> arguments = [
-      "annotate",
-      "-p",
-      relFN
-    ];
+    List<String> arguments = ["annotate", "-p", relFN];
 
-    var command = Exec.run(
-        program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
+    var command =
+        Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
     var source = await File(filename).readAsLines();
     var lines = new List<LineFile>();
@@ -32,23 +27,19 @@ class AnnotateGit {
 
     var commandOutput = await command;
     for (var output in commandOutput) {
-      if (output.length == 0)
-        continue;
+      if (output.length == 0) continue;
 
       if (output[0] != '\t') {
         int space = output.indexOf(' ');
         String right = output.substring(space + 1);
         if (output.startsWith("committer-time ")) {
           time = int.parse(right);
-        }
-        else if (output.startsWith("author ")) {
+        } else if (output.startsWith("author ")) {
           editor = right;
-        }
-        else if (output.startsWith("author-mail ")) {
+        } else if (output.startsWith("author-mail ")) {
           editorEmail += right;
         }
-      }
-      else {
+      } else {
         if (editorEmail.length > 0) {
           editor += " " + editorEmail;
           editorEmail = "";
