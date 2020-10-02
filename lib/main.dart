@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:YellowSnow/annotate_git.dart';
-import 'package:YellowSnow/workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'annotations.dart';
+import 'annotate_git.dart';
+import 'annotation_map.dart';
+import 'workspace.dart';
 import 'themes.dart';
 import 'theme.dart' as Theme;
 
@@ -118,20 +119,26 @@ class _MainPageState extends State<MainPage> {
         title: Text(widget.filename),
       ),
       drawer: drawerItems,
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: DraggableScrollbar.semicircle(
-          alwaysVisibleScrollThumb: true,
-          controller: linesViewController,
-          child: ListView.builder(
-              itemCount: annotations.lines.length,
-              controller: linesViewController,
-              itemBuilder: (context, i) {
-                return annotations.lines[i].getWidget(annotations, theme);
-              }),
+      body: Row(children: <Widget>[
+        Expanded(
+          child: DraggableScrollbar.semicircle(
+            alwaysVisibleScrollThumb: true,
+            controller: linesViewController,
+            child: ListView.builder(
+                itemCount: annotations.lines.length,
+                controller: linesViewController,
+                itemBuilder: (context, i) {
+                  return annotations.lines[i].getWidget(annotations, theme);
+                }),
+          ),
         ),
-      ),
+        SizedBox(
+            width: 120,
+            child: Container(
+                height: double.infinity,
+                width: double.infinity,
+                child: AnnotationMap()))
+      ]),
     );
   }
 
