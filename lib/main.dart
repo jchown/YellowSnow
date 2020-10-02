@@ -133,11 +133,11 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         SizedBox(
-            width: 120,
+            width: 80,
             child: Container(
                 height: double.infinity,
                 width: double.infinity,
-                child: AnnotationMap()))
+                child: AnnotationMap(annotations, theme)))
       ]),
     );
   }

@@ -2,21 +2,28 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:YellowSnow/annotations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart' as wdgt;
-import 'package:image/image.dart' as img;
+
+import 'theme.dart' as th;
 
 class AnnotationMap extends WidgetToRenderBoxAdapter {
-  AnnotationMap() : super(renderBox: new AnnotationMapRender()) {
+  AnnotationMap(Annotations annotions, th.Theme theme)
+      : super(renderBox: new AnnotationMapRender(annotions, theme)) {
     (renderBox as AnnotationMapRender).widget = this;
   }
 }
 
 class AnnotationMapRender extends RenderBox {
+
+  AnnotationMapRender(this.annotions, this.theme);
+
+  Annotations annotions;
+  th.Theme theme;
+  AnnotationMap widget;
+
   @override
   bool get sizedByParent => true;
-
-  AnnotationMap widget;
 
   @override
   void performResize() {
@@ -67,10 +74,12 @@ class AnnotationMapRender extends RenderBox {
     var pixels = Uint8List(w * h * 4);
     int i = 0;
     for (int y = 0; y < h; y++) {
+      var line = annotions.lines[((y * annotions.lines.length) / h).floor()];
+      var bgCol = theme.getBGColor(annotions.getLevel(line.timestamp));
       for (int x = 0; x < w; x++) {
-        pixels[i++] = 0xff;
-        pixels[i++] = 0x0;
-        pixels[i++] = 0x0;
+        pixels[i++] = bgCol.red;
+        pixels[i++] = bgCol.green;
+        pixels[i++] = bgCol.blue;
         pixels[i++] = 0xff;
       }
     }
