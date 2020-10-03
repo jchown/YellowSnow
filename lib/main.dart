@@ -16,7 +16,6 @@ void main() {
 }
 
 class YellowSnowApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,16 +41,26 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+
   Workspace workspace;
   Annotations annotations;
   Theme.Theme theme;
 
+  final GlobalKey listKey = GlobalKey();
   final ScrollController linesViewController = ScrollController();
+
+  ListView lines;
+  AnnotationMap map;
+  AnnotationZone zone;
+
+  int topLine = 0;
+  int bottomLine = 0;
 
   _MainPageState(String filename) {
     workspace = Workspace.pending();
     annotations = Annotations.pending();
     theme = null;
+    linesViewController.addListener(onScrollChanged);
     load(filename);
   }
 
@@ -59,8 +68,7 @@ class _MainPageState extends State<MainPage> {
     var prefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
     stdout.writeln("Workspace: ${newWorkspace.rootDir}");
-    var newAnnotations =
-        await AnnotateGit.getAnnotations(newWorkspace, filename);
+    var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
     var newTheme = Themes.get(await prefs);
 
     setState(() {
@@ -114,8 +122,6 @@ class _MainPageState extends State<MainPage> {
 
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.filename),
       ),
       drawer: drawerItems,
@@ -124,7 +130,8 @@ class _MainPageState extends State<MainPage> {
           child: DraggableScrollbar.semicircle(
             alwaysVisibleScrollThumb: true,
             controller: linesViewController,
-            child: ListView.builder(
+            child: lines = ListView.builder(
+                key: listKey,
                 itemCount: annotations.lines.length,
                 controller: linesViewController,
                 itemBuilder: (context, i) {
@@ -133,11 +140,13 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         SizedBox(
-            width: 80,
+            width: 60,
             child: Container(
-                height: double.infinity,
-                width: double.infinity,
-                child: AnnotationMap(annotations, theme)))
+                height: double.infinity, width: double.infinity,
+                child: Stack(fit: StackFit.expand,
+                    children: <Widget>[
+                        map = AnnotationMap(annotations, theme),
+                        zone = AnnotationZone(annotations, theme, topLine, bottomLine)])))
       ]),
     );
   }
@@ -152,5 +161,17 @@ class _MainPageState extends State<MainPage> {
       annotations = oldAnnotations;
       theme = newTheme;
     });
+  }
+
+  void onScrollChanged() {
+    updateZone();
+  }
+
+  void updateZone() {
+    final box = listKey.currentContext.findRenderObject() as RenderBox;
+    var height = box.size.height;
+    var extent = linesViewController.position.maxScrollExtent;
+    var offset = linesViewController.offset;
+    zone.update(extent + height, offset, height);
   }
 }

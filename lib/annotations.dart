@@ -62,7 +62,7 @@ abstract class Annotations {
       var timestamp = sorted[i];
 
       double t0 = (timestamp.toDouble() - minTime) / (maxTime - minTime);
-      double t1 = (i.toDouble()) / sorted.length;
+      double t1 = (i.toDouble()) / (sorted.length - 1);
 
       double t = t0 * t1 * t0 * t1 * t0 * t1;
       colorMap[timestamp] = (t * 255).floor();
