@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:YellowSnow/line.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,11 +13,17 @@ import 'workspace.dart';
 import 'themes.dart';
 import 'theme.dart' as Theme;
 
-void main() {
-  runApp(YellowSnowApp());
+void main(List<String> arguments) {
+  String path = Directory.current.absolute.toString();
+  if (arguments.length > 0) path = arguments[1];
+  runApp(YellowSnowApp("S:\\Work\\vTime\\vTag-Android\\bin")); //\\prebuild.xml"));
 }
 
 class YellowSnowApp extends StatelessWidget {
+  final String initialPath;
+
+  YellowSnowApp(this.initialPath);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,9 +32,7 @@ class YellowSnowApp extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MainPage(
-//          filename: 'S:\\Work\\vTime\\mvr.api\\src\\main\\java\\starship\\mvr\\model\\db\\FriendsDB.java'),
-          filename: "S:\\Work\\vTime\\vTag-Android\\bin\\prebuild.xml"),
+      home: MainPage(filename: initialPath),
     );
   }
 }
@@ -41,11 +47,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
+  String filename;
   Workspace workspace;
   Annotations annotations;
   Theme.Theme theme;
 
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
   final ScrollController linesViewController = ScrollController();
 
@@ -53,15 +60,22 @@ class _MainPageState extends State<MainPage> {
   AnnotationMap map;
   AnnotationZone zone;
 
-  int topLine = 0;
-  int bottomLine = 0;
-
-  _MainPageState(String filename) {
-    workspace = Workspace.pending();
+  _MainPageState(this.filename) {
     annotations = Annotations.pending();
+    workspace = null;
     theme = null;
     linesViewController.addListener(onScrollChanged);
     load(filename);
+  }
+
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+  }
+
+  void onLayout() {
+    updateZone();
+    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
   }
 
   Future<void> load(String filename) async {
@@ -90,6 +104,7 @@ class _MainPageState extends State<MainPage> {
               color: Colors.blueGrey,
             ),
           ),
+          ListTile(title: Text('Open File'), onTap: onOpenFile),
           ExpansionTile(
             title: Text("Theme"),
             children: <Widget>[
@@ -120,35 +135,79 @@ class _MainPageState extends State<MainPage> {
       ),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.filename),
-      ),
-      drawer: drawerItems,
-      body: Row(children: <Widget>[
-        Expanded(
-          child: DraggableScrollbar.semicircle(
-            alwaysVisibleScrollThumb: true,
-            controller: linesViewController,
-            child: lines = ListView.builder(
-                key: listKey,
-                itemCount: annotations.lines.length,
-                controller: linesViewController,
-                itemBuilder: (context, i) {
-                  return annotations.lines[i].getWidget(annotations, theme);
-                }),
-          ),
+    List<Widget> topRowWidgets = [
+      IconButton(
+        icon: Icon(
+          Icons.menu,
+          color: Colors.white,
         ),
-        SizedBox(
-            width: 60,
-            child: Container(
-                height: double.infinity, width: double.infinity,
-                child: Stack(fit: StackFit.expand,
-                    children: <Widget>[
-                        map = AnnotationMap(annotations, theme),
-                        zone = AnnotationZone(annotations, theme, topLine, bottomLine)])))
-      ]),
-    );
+        onPressed: () => scaffoldKey.currentState.openDrawer(),
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.home,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          // do something
+        },
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.settings,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          // do something
+        },
+      ),
+    ];
+
+    if (workspace != null) {
+      topRowWidgets.add(ElevatedButton(child: Text(workspace.rootDir), onPressed: () => load(workspace.rootDir)));
+      var segments = workspace.getRelativePath(filename).split(Workspace.dirChar);
+      for (int i = 0; i < segments.length; i++) {
+        bool last = i == (segments.length - 1);
+        var path = workspace.getAbsolutePath(segments.getRange(0, i + 1).join(Workspace.dirChar));
+        String segment = segments[i];
+        if (!last) segment += Workspace.dirChar;
+        topRowWidgets.add(ElevatedButton(child: Text(segment), onPressed: () => load(path)));
+      }
+    }
+
+    var topRow = Row(
+        children: <Widget>[Expanded(child: Container(color: Colors.blueGrey, child: Row(children: topRowWidgets)))]);
+
+    var mainView = Row(children: <Widget>[
+      Expanded(
+        child: DraggableScrollbar.semicircle(
+          alwaysVisibleScrollThumb: true,
+          controller: linesViewController,
+          child: lines = ListView.builder(
+              key: listKey,
+              itemCount: annotations.lines.length,
+              controller: linesViewController,
+              itemBuilder: (context, i) {
+                var line = annotations.lines[i];
+                return GestureDetector(
+                    onTap: () => onLineClick(line),
+                    child: line.getWidget(annotations, theme));
+              }),
+        ),
+      ),
+      SizedBox(
+          width: 60,
+          child: Container(
+              height: double.infinity,
+              width: double.infinity,
+              child: Stack(fit: StackFit.expand, children: <Widget>[
+                map = AnnotationMap(annotations, theme),
+                zone = AnnotationZone(annotations, theme)
+              ])))
+    ]);
+
+    return Scaffold(
+        key: scaffoldKey, drawer: drawerItems, body: Column(children: <Widget>[topRow, Expanded(child: mainView)]));
   }
 
   Future<void> setTheme(String themeID) async {
@@ -173,5 +232,17 @@ class _MainPageState extends State<MainPage> {
     var extent = linesViewController.position.maxScrollExtent;
     var offset = linesViewController.offset;
     zone.update(extent + height, offset, height);
+  }
+
+  Future<void> onHome() async {}
+
+  Future<void> onOpenFile() async {
+    var result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result.count == 1) load(result.files[0].toString());
+  }
+
+  void onLineClick(Line line) {
+    if (line.getFilename() != null)
+      load(line.getFilename());
   }
 }

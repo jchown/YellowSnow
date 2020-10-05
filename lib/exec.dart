@@ -9,7 +9,7 @@ class Exec {
 
     var process = await Process.start(program, arguments,
         workingDirectory: workingDirectory,
-        environment: environment
+        environment: environment ?? Map()
     );
 
     final List<int> output = <int>[];

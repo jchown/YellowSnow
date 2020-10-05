@@ -21,7 +21,7 @@ class AnnotationMap extends WidgetToRenderBoxAdapter {
 class AnnotationZone extends WidgetToRenderBoxAdapter {
   RenderedZone get renderedZone => renderBox as RenderedZone;
 
-  AnnotationZone(Annotations annotations, th.Theme theme, int topLine, int bottomLine) : super(renderBox: new RenderedZone(annotations, theme)) {
+  AnnotationZone(Annotations annotations, th.Theme theme) : super(renderBox: new RenderedZone(annotations, theme)) {
     renderedZone.widget = this;
   }
 
@@ -151,7 +151,7 @@ class RenderedZone extends RenderBox {
   void paint(PaintingContext context, Offset offset) {
     if (widget != null && totalHeight > 0) {
       var paint = Paint();
-      paint.color = theme.fgOld;
+      paint.color = theme?.fgOld ?? Colors.black;
       paint.style = PaintingStyle.stroke;
       paint.strokeWidth = 2;
       paint.strokeJoin = StrokeJoin.round;

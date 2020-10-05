@@ -44,6 +44,12 @@ class Workspace {
     return absolutePath.substring(rootDir.length);
   }
 
+  /// Return an absolute path from a workspace relative path
+
+  String getAbsolutePath(String relativePath) {
+    return "$rootDir$relativePath";
+  }
+
   static Workspace pending() {
     return new Workspace("?");
   }

@@ -8,4 +8,6 @@ abstract class Line {
   int timestamp;
 
   Widget getWidget(Annotations annotations, Theme theme);
+
+  String getFilename();
 }

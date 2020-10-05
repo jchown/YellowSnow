@@ -1,28 +1,39 @@
 import 'dart:io';
 
-import 'package:YellowSnow/annotations_file.dart';
-
-import 'exec.dart';
-import 'line_file.dart';
-import 'workspace.dart';
 import 'annotations.dart';
+import 'annotations_file.dart';
+import 'annotations_dir.dart';
+import 'line_file.dart';
+import 'line_dir.dart';
+import 'workspace.dart';
+import 'exec.dart';
 
 class AnnotateGit {
   static const String program = "git";
 
-  static Future<Annotations> getAnnotations(
-      Workspace workspace, String filename) async {
+  static Future<Annotations> getAnnotations(Workspace workspace, String filename) async {
+    int lastSlash = filename.lastIndexOf(Workspace.dirChar);
+    var dir = Directory(filename.substring(0, lastSlash));
+    var entries = dir.listSync();
+    var fse = (entries.firstWhere((f) => f.path == filename));
+    if (fse is File)
+      return getAnnotationsFile(workspace, filename);
+    else
+      return getAnnotationsDir(workspace, filename);
+  }
+
+  static Future<Annotations> getAnnotationsFile(Workspace workspace, String filename) async {
     var relFN = workspace.getRelativePath(filename);
     stdout.writeln("Filename: $filename -> $relFN");
 
     List<String> arguments = ["annotate", "-p", relFN];
 
-    var command =
-        Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
+    var command = Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
     var source = await File(filename).readAsLines();
     var lines = new List<LineFile>();
-    String editor = "", editorEmail = "";
+    String editor = "";
+    String editorEmail = "";
     int time = 0;
 
     var commandOutput = await command;
@@ -56,63 +67,58 @@ class AnnotateGit {
     return AnnotationsFile(lines);
   }
 
-/*
-override public Annotations GetAnnotationsDir(string directory)
-{
-  List<FSEntry> files = new List<FSEntry>();
+  static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {
+    List<LineDir> files = new List<LineDir>();
 
-  foreach (var file in Directory.EnumerateFileSystemEntries(directory))
-  {
-  FileAttributes attr = File.GetAttributes(file);
+    for (var dirEntry in await Directory(directory).list().toList()) {
+      var edited = dirEntry
+          .statSync()
+          .modified
+          .millisecondsSinceEpoch;
 
-  string editor = File.GetAccessControl(file).GetOwner(typeof(System.Security.Principal.NTAccount)).ToString();
-  long edited = Epoch.ToLong(File.GetLastAccessTime(file));
-  string commitHash = null, authorName = null, authorEmail = null, subject = null;
+      var filename = dirEntry.path.substring(dirEntry.path.lastIndexOf(Workspace.dirChar) + 1);
 
-  //  Get the most recent edit
+      //  Get the most recent edit
 
-  Strings arguments = new Strings();
-  arguments.Add("log");
-  arguments.Add("--pretty=format:ch:%H%nan:%an%nae:%ae%nat:%at%nsj:%sj");
-  arguments.Add("-n");
-  arguments.Add("1");
-  arguments.Add(file.GetFileName());
+      List<String> arguments = [
+        "log",
+        "--pretty=format:ch:%H%nan:%an%nae:%ae%nat:%at%nsj:%sj",
+        "-n",
+        "1",
+        "${dirEntry.path}"
+      ];
 
-  Command command = new Command(program, directory, arguments);
+      var command = await Exec.run(program, arguments, workspace.rootDir, null);
 
-  foreach (string output in command.GetOutput())
-  {
-  string key = output.Substring(0, 3);
-  string value = output.Substring(3);
-  if (key == "ch:")
-  commitHash = value;
-  else if (key == "ct:")
-  edited = long.Parse(value);
-  else if (key == "an:")
-  authorName = value;
-  else if (key == "ae:")
-  authorEmail = value;
-  else if (key == "sj:")
-  subject = value;
+      String commitHash,
+          authorName,
+          authorEmail,
+          subject,
+          editor = "?";
+
+      for (String output in command) {
+        String key = output.substring(0, 3);
+        String value = output.substring(3);
+        if (key == "ch:")
+          commitHash = value;
+        else if (key == "ct:")
+          edited = int.parse(value);
+        else if (key == "an:")
+          authorName = value;
+        else if (key == "ae:")
+          authorEmail = value;
+        else if (key == "sj:") subject = value;
+      }
+
+      if (commitHash != null) {
+        editor = authorName;
+        if (authorEmail != null) editor += " <" + authorEmail + ">";
+      }
+
+      var absFilename = "$directory${Workspace.dirChar}$filename";
+      files.add(LineDir(absFilename, editor, /*file,*/ edited));
+    }
+
+    return new AnnotationsDir(files);
   }
-
-  if (commitHash != null)
-  {
-  editor = authorName;
-  if (authorEmail != null)
-  editor += " <" + authorEmail + ">";
-  }
-
-  files.Add(new FSEntry
-  {
-  editor = editor,
-  name = file,
-  modified = edited
-  });
-  }
-
-  return new AnnotationsFS(files);
-}
-
- */
 }

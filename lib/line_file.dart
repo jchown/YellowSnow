@@ -1,6 +1,6 @@
-import 'package:YellowSnow/annotations.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'annotations.dart';
 import 'line.dart';
 import 'theme.dart';
 
@@ -13,6 +13,12 @@ class LineFile extends Line {
     this.timestamp = timestamp;
     this.author = editor;
     this.source = source;
+  }
+
+
+  @override
+  String getFilename() {
+    return null;
   }
 
   @override
