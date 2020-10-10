@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class TopRow extends StatelessWidget {
-  const TopRow({Key key, @required this.workspace, @required this.filename, @required this.onChangedFilename})
+  const TopRow(
+      {Key key,
+      @required this.workspace,
+      @required this.filename,
+      @required this.onChangedFilename,
+      @required this.onTappedMenu})
       : super(key: key);
 
   final Workspace workspace;
   final String filename;
   final ValueChanged<String> onChangedFilename;
+  final VoidCallback onTappedMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +24,7 @@ class TopRow extends StatelessWidget {
           Icons.menu,
           color: Colors.white,
         ),
-//        onPressed: () => scaffoldKey.currentState.openDrawer(),
+        onPressed: () => onTappedMenu(),
       )
     ];
 

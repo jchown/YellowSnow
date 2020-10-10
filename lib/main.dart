@@ -181,7 +181,7 @@ class _MainPageState extends State<MainPage> {
                   ]))))
     ]);
 
-    var topRow = TopRow(workspace: this.workspace, filename: this.filename, onChangedFilename: _handleFilenameChanged);
+    var topRow = TopRow(workspace: this.workspace, filename: this.filename, onChangedFilename: _handleFilenameChanged, onTappedMenu: _handleTappedMenu);
 
     return Scaffold(
         key: scaffoldKey, drawer: drawerItems, body: Column(children: <Widget>[topRow, Expanded(child: mainView)]));
@@ -229,5 +229,9 @@ class _MainPageState extends State<MainPage> {
     var pos = extent * position.dy / height;
 
     linesViewController.position.jumpTo(pos.clamp(0, extent.toInt()));
+  }
+
+  void _handleTappedMenu() {
+    scaffoldKey.currentState.openDrawer();
   }
 }
