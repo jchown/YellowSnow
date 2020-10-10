@@ -13,6 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  intl: ^0.16.1
   draggable_scrollbar: ^0.0.4
   shared_preferences: ^0.5.12
   image: ^2.1.18

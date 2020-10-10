@@ -12,9 +12,7 @@ class AnnotateGit {
   static const String program = "git";
 
   static Future<Annotations> getAnnotations(Workspace workspace, String filename) async {
-
-    if (workspace.rootDir == filename)
-      return getAnnotationsDir(workspace, filename);
+    if (workspace.rootDir == filename) return getAnnotationsDir(workspace, filename);
 
     //  There's probably a better "is file" test...
 
@@ -40,6 +38,7 @@ class AnnotateGit {
     var lines = new List<LineFile>();
     String editor = "";
     String editorEmail = "";
+    String comment = "";
     int time = 0;
 
     var commandOutput = await command;
@@ -55,6 +54,8 @@ class AnnotateGit {
           editor = right;
         } else if (output.startsWith("author-mail ")) {
           editorEmail += right;
+        } else if (output.startsWith("summary")) {
+          comment = right;
         }
       } else {
         if (editorEmail.length > 0) {
@@ -64,8 +65,8 @@ class AnnotateGit {
 
         lines.add(LineFile(
             editor,
-            source[lines.length],
-            //output.Substring(1), Can't use this, git has removed whitespace
+            source[lines.length], //output.Substring(1), Can't use this, git has removed whitespace
+            comment,
             time));
       }
     }

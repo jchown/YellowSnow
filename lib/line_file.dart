@@ -1,20 +1,21 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'annotations.dart';
 import 'line.dart';
-import 'color_scheme.dart';
+import 'color_scheme.dart' as cs;
 
 class LineFile extends Line {
   String author;
+  String email;
   int lineNo;
   String source;
+  String comment;
 
-  LineFile(String editor, String source, int timestamp) {
+  LineFile(this.author, this.source, this.comment, int timestamp) {
     this.timestamp = timestamp;
-    this.author = editor;
-    this.source = source;
   }
-
 
   @override
   String getFilename() {
@@ -22,25 +23,24 @@ class LineFile extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, ColorScheme theme) {
+  Widget getWidget(Annotations annotations, cs.ColorScheme theme) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);
-    return Row(
-        children: <Widget>[
+    var dateFormat = DateFormat("yyyy.MM.dd HH:mm:ss");
+
+    return Row(children: <Widget>[
       SizedBox(width: 4),
       SizedBox(
           width: 120,
-          child: Container(
-              color: bgCol,
-              width: double.infinity,
-              child: Text(author,
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: TextStyle(
-                      fontFamily: 'RobotoMono',
-                      backgroundColor: bgCol,
-                      color: fgCol)))),
+          child: Tooltip(message: "$author - ${dateFormat.format(new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000))}\n\n$comment",
+              child: Container(
+                  color: bgCol,
+                  width: double.infinity,
+                  child: Text(author,
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol))))),
       SizedBox(width: 4),
       new Expanded(
           child: Container(
@@ -49,10 +49,7 @@ class LineFile extends Line {
               child: Text(source,
                   maxLines: 1,
                   textWidthBasis: TextWidthBasis.parent,
-                  style: TextStyle(
-                      fontFamily: 'RobotoMono',
-                      backgroundColor: bgCol,
-                      color: fgCol)))),
+                  style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol)))),
       SizedBox(width: 4)
     ]);
   }
