@@ -6,12 +6,12 @@ import 'package:YellowSnow/annotations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'theme.dart' as th;
+import 'color_scheme.dart' as cs;
 
 /// A widget to drag the "map" of colours
 
 class AnnotationMap extends WidgetToRenderBoxAdapter {
-  AnnotationMap(Annotations annotations, th.Theme theme) : super(renderBox: new RenderedMap(annotations, theme)) {
+  AnnotationMap(Annotations annotations, cs.ColorScheme theme) : super(renderBox: new RenderedMap(annotations, theme)) {
     (renderBox as RenderedMap).widget = this;
   }
 }
@@ -21,7 +21,7 @@ class AnnotationMap extends WidgetToRenderBoxAdapter {
 class AnnotationZone extends WidgetToRenderBoxAdapter {
   RenderedZone get renderedZone => renderBox as RenderedZone;
 
-  AnnotationZone(Annotations annotations, th.Theme theme) : super(renderBox: new RenderedZone(annotations, theme)) {
+  AnnotationZone(Annotations annotations, cs.ColorScheme theme) : super(renderBox: new RenderedZone(annotations, theme)) {
     renderedZone.widget = this;
   }
 
@@ -36,7 +36,7 @@ class RenderedMap extends RenderBox {
   RenderedMap(this.annotations, this.theme);
 
   Annotations annotations;
-  th.Theme theme;
+  cs.ColorScheme theme;
   AnnotationMap widget;
 
   @override
@@ -133,7 +133,7 @@ class RenderedZone extends RenderBox {
   RenderedZone(this.annotations, this.theme);
 
   Annotations annotations;
-  th.Theme theme;
+  cs.ColorScheme theme;
   AnnotationZone widget;
 
   var zoneStart;

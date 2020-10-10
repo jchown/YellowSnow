@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:YellowSnow/line.dart';
+import 'package:YellowSnow/top_row.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
@@ -10,19 +11,21 @@ import 'annotations.dart';
 import 'annotate_git.dart';
 import 'annotation_map.dart';
 import 'workspace.dart';
-import 'themes.dart';
-import 'theme.dart' as Theme;
+import 'color_schemes.dart';
+import 'color_scheme.dart' as cs;
 
 void main(List<String> arguments) {
   String path = Directory.current.absolute.toString();
   if (arguments.length > 0) path = arguments[1];
-  runApp(YellowSnowApp("S:\\Work\\vTime\\vTag-Android\\bin")); //\\prebuild.xml"));
+  runApp(YellowSnowApp.ofPath("S:\\Work\\vTime\\vTag-Android\\bin\\prebuild.xml"));
 }
 
 class YellowSnowApp extends StatelessWidget {
   final String initialPath;
 
-  YellowSnowApp(this.initialPath);
+  YellowSnowApp() : initialPath = null;
+
+  YellowSnowApp.ofPath(this.initialPath);
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class _MainPageState extends State<MainPage> {
   String filename;
   Workspace workspace;
   Annotations annotations;
-  Theme.Theme theme;
+  cs.ColorScheme colorScheme;
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
@@ -63,7 +66,7 @@ class _MainPageState extends State<MainPage> {
   _MainPageState(this.filename) {
     annotations = Annotations.pending();
     workspace = null;
-    theme = null;
+    colorScheme = null;
     linesViewController.addListener(onScrollChanged);
     load(filename);
   }
@@ -78,17 +81,30 @@ class _MainPageState extends State<MainPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
   }
 
+  void _handleFilenameChanged(String filename) {
+    load(filename);
+  }
+
   Future<void> load(String filename) async {
     var prefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
+    this.filename = filename;
+
     stdout.writeln("Workspace: ${newWorkspace.rootDir}");
+
+    setState(() {
+      workspace = newWorkspace;
+      annotations = Annotations.pending();
+      colorScheme = null;
+    });
+
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
-    var newTheme = Themes.get(await prefs);
+    var newTheme = ColorSchemes.get(await prefs);
 
     setState(() {
       workspace = newWorkspace;
       annotations = newAnnotations;
-      theme = newTheme;
+      colorScheme = newTheme;
     });
   }
 
@@ -135,49 +151,6 @@ class _MainPageState extends State<MainPage> {
       ),
     );
 
-    List<Widget> topRowWidgets = [
-      IconButton(
-        icon: Icon(
-          Icons.menu,
-          color: Colors.white,
-        ),
-        onPressed: () => scaffoldKey.currentState.openDrawer(),
-      ),
-      IconButton(
-        icon: Icon(
-          Icons.home,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          // do something
-        },
-      ),
-      IconButton(
-        icon: Icon(
-          Icons.settings,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          // do something
-        },
-      ),
-    ];
-
-    if (workspace != null) {
-      topRowWidgets.add(ElevatedButton(child: Text(workspace.rootDir), onPressed: () => load(workspace.rootDir)));
-      var segments = workspace.getRelativePath(filename).split(Workspace.dirChar);
-      for (int i = 0; i < segments.length; i++) {
-        bool last = i == (segments.length - 1);
-        var path = workspace.getAbsolutePath(segments.getRange(0, i + 1).join(Workspace.dirChar));
-        String segment = segments[i];
-        if (!last) segment += Workspace.dirChar;
-        topRowWidgets.add(ElevatedButton(child: Text(segment), onPressed: () => load(path)));
-      }
-    }
-
-    var topRow = Row(
-        children: <Widget>[Expanded(child: Container(color: Colors.blueGrey, child: Row(children: topRowWidgets)))]);
-
     var mainView = Row(children: <Widget>[
       Expanded(
         child: DraggableScrollbar.semicircle(
@@ -189,22 +162,26 @@ class _MainPageState extends State<MainPage> {
               controller: linesViewController,
               itemBuilder: (context, i) {
                 var line = annotations.lines[i];
-                return GestureDetector(
-                    onTap: () => onLineClick(line),
-                    child: line.getWidget(annotations, theme));
+                return GestureDetector(onTap: () => handleLineClick(line), child: line.getWidget(annotations, colorScheme));
               }),
         ),
       ),
       SizedBox(
           width: 60,
-          child: Container(
-              height: double.infinity,
-              width: double.infinity,
-              child: Stack(fit: StackFit.expand, children: <Widget>[
-                map = AnnotationMap(annotations, theme),
-                zone = AnnotationZone(annotations, theme)
-              ])))
+          child: Listener(
+              onPointerDown: (pd) => handleMapTap(pd.localPosition),
+              onPointerMove: (pm) => { if (pm.buttons != 0) handleMapTap(pm.localPosition) },
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                  height: double.infinity,
+                  width: double.infinity,
+                  child: Stack(fit: StackFit.expand, children: <Widget>[
+                    map = AnnotationMap(annotations, colorScheme),
+                    zone = AnnotationZone(annotations, colorScheme)
+                  ]))))
     ]);
+
+    var topRow = TopRow(workspace: this.workspace, filename: this.filename, onChangedFilename: _handleFilenameChanged);
 
     return Scaffold(
         key: scaffoldKey, drawer: drawerItems, body: Column(children: <Widget>[topRow, Expanded(child: mainView)]));
@@ -213,12 +190,12 @@ class _MainPageState extends State<MainPage> {
   Future<void> setTheme(String themeID) async {
     var oldWorkspace = workspace;
     var oldAnnotations = annotations;
-    var newTheme = Themes.set(await SharedPreferences.getInstance(), themeID);
+    var newColorScheme = ColorSchemes.set(await SharedPreferences.getInstance(), themeID);
 
     setState(() {
       workspace = oldWorkspace;
       annotations = oldAnnotations;
-      theme = newTheme;
+      colorScheme = newColorScheme;
     });
   }
 
@@ -241,8 +218,16 @@ class _MainPageState extends State<MainPage> {
     if (result.count == 1) load(result.files[0].toString());
   }
 
-  void onLineClick(Line line) {
-    if (line.getFilename() != null)
-      load(line.getFilename());
+  void handleLineClick(Line line) {
+    if (line.getFilename() != null) load(line.getFilename());
+  }
+
+  handleMapTap(Offset position) {
+    final box = listKey.currentContext.findRenderObject() as RenderBox;
+    var height = box.size.height;
+    var extent = linesViewController.position.maxScrollExtent;
+    var pos = extent * position.dy / height;
+
+    linesViewController.position.jumpTo(pos.clamp(0, extent.toInt()));
   }
 }

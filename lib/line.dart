@@ -1,4 +1,4 @@
-import 'package:YellowSnow/theme.dart';
+import 'package:YellowSnow/color_scheme.dart';
 import 'package:flutter/widgets.dart';
 
 import 'annotations.dart';
@@ -7,7 +7,7 @@ import 'annotations.dart';
 abstract class Line {
   int timestamp;
 
-  Widget getWidget(Annotations annotations, Theme theme);
+  Widget getWidget(Annotations annotations, ColorScheme theme);
 
   String getFilename();
 }

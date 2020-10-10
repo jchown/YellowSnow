@@ -12,6 +12,12 @@ class AnnotateGit {
   static const String program = "git";
 
   static Future<Annotations> getAnnotations(Workspace workspace, String filename) async {
+
+    if (workspace.rootDir == filename)
+      return getAnnotationsDir(workspace, filename);
+
+    //  There's probably a better "is file" test...
+
     int lastSlash = filename.lastIndexOf(Workspace.dirChar);
     var dir = Directory(filename.substring(0, lastSlash));
     var entries = dir.listSync();
@@ -71,10 +77,7 @@ class AnnotateGit {
     List<LineDir> files = new List<LineDir>();
 
     for (var dirEntry in await Directory(directory).list().toList()) {
-      var edited = dirEntry
-          .statSync()
-          .modified
-          .millisecondsSinceEpoch;
+      var edited = dirEntry.statSync().modified.millisecondsSinceEpoch;
 
       var filename = dirEntry.path.substring(dirEntry.path.lastIndexOf(Workspace.dirChar) + 1);
 
@@ -90,13 +93,12 @@ class AnnotateGit {
 
       var command = await Exec.run(program, arguments, workspace.rootDir, null);
 
-      String commitHash,
-          authorName,
-          authorEmail,
-          subject,
-          editor = "?";
+      String commitHash, authorName, authorEmail, subject, editor = "?";
 
       for (String output in command) {
+        if (output.length == 0) continue;
+
+        stdout.writeln("| $output");
         String key = output.substring(0, 3);
         String value = output.substring(3);
         if (key == "ch:")
@@ -112,11 +114,13 @@ class AnnotateGit {
 
       if (commitHash != null) {
         editor = authorName;
-        if (authorEmail != null) editor += " <" + authorEmail + ">";
+        if (authorEmail != null) editor += " <$authorEmail>";
+      } else {
+        edited = 0;
       }
 
       var absFilename = "$directory${Workspace.dirChar}$filename";
-      files.add(LineDir(absFilename, editor, /*file,*/ edited));
+      files.add(LineDir(absFilename, editor, edited));
     }
 
     return new AnnotationsDir(files);

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'annotations.dart';
 import 'line.dart';
-import 'theme.dart';
+import 'color_scheme.dart';
 
 class LineFile extends Line {
   String author;
@@ -22,7 +22,7 @@ class LineFile extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, Theme theme) {
+  Widget getWidget(Annotations annotations, ColorScheme theme) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);

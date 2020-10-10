@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-class Theme {
+class ColorScheme {
   String name;
   String code;
 
@@ -10,7 +10,7 @@ class Theme {
   Color bgOld;
   Color bgNew;
 
-  Theme(this.name, this.code, this.fgOld, this.fgNew, this.bgOld, this.bgNew);
+  ColorScheme(this.name, this.code, this.fgOld, this.fgNew, this.bgOld, this.bgNew);
 
   Color getBGColor(int level) {
     Color from = bgOld;

@@ -3,7 +3,7 @@ import 'package:YellowSnow/workspace.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'line.dart';
-import 'theme.dart';
+import 'color_scheme.dart';
 
 class LineDir extends Line {
   String author;
@@ -19,7 +19,7 @@ class LineDir extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, Theme theme) {
+  Widget getWidget(Annotations annotations, ColorScheme theme) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);

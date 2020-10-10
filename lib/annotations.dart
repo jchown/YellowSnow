@@ -26,6 +26,7 @@ abstract class Annotations {
   Map<int, int> calculateColorMap(Set<int> timestamps) {
 
     var colorMap = new Map<int, int>();
+    colorMap[0] = 0;
 
     if (timestamps.isEmpty) {
       stdout.write("No timestamps\n");
@@ -39,6 +40,8 @@ abstract class Annotations {
 
     for (int timestamp in timestamps) {
       if (timestamp == null) throw Exception("Null time in timestamps");
+      if (timestamp == 0)
+        continue;
 
       if (minTime > timestamp) minTime = timestamp;
 
