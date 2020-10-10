@@ -25,19 +25,34 @@ class TopRow extends StatelessWidget {
           color: Colors.white,
         ),
         onPressed: () => onTappedMenu(),
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.chevron_left,
+          color: Colors.white,
+        ),
+        onPressed: () => onTappedMenu(),
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.chevron_right,
+          color: Colors.white,
+        ),
+        onPressed: () => onTappedMenu(),
+      ),
+      IconButton(
+        icon: Icon(
+          Icons.refresh,
+          color: Colors.white,
+        ),
+        onPressed: () => onTappedMenu(),
       )
     ];
 
     if (filename != "") {
-      topRowWidgets.add(IconButton(
-        icon: Icon(
-          Icons.home,
-          color: Colors.white,
-        ),
-        onPressed: () => onChangedFilename(workspace.rootDir),
-      ));
-      topRowWidgets
-          .add(ElevatedButton(child: Text(workspace.rootDir), onPressed: () => onChangedFilename(workspace.rootDir)));
+      topRowWidgets.add(ElevatedButton(
+          child: Row(children: <Widget>[Icon(Icons.home, color: Colors.white), SizedBox(width: 8), Text(workspace.rootDir)]),
+          onPressed: () => onChangedFilename(workspace.rootDir)));
       if (filename != workspace.rootDir) {
         var segments = workspace.getRelativePath(filename).split(Workspace.dirChar);
         for (int i = 0; i < segments.length; i++) {

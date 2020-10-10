@@ -26,9 +26,11 @@ class LineFile extends Line {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);
-    return Row(children: <Widget>[
+    return Row(
+        children: <Widget>[
+      SizedBox(width: 4),
       SizedBox(
-          width: 160,
+          width: 120,
           child: Container(
               color: bgCol,
               width: double.infinity,
@@ -39,6 +41,7 @@ class LineFile extends Line {
                       fontFamily: 'RobotoMono',
                       backgroundColor: bgCol,
                       color: fgCol)))),
+      SizedBox(width: 4),
       new Expanded(
           child: Container(
               color: bgCol,
@@ -50,6 +53,7 @@ class LineFile extends Line {
                       fontFamily: 'RobotoMono',
                       backgroundColor: bgCol,
                       color: fgCol)))),
+      SizedBox(width: 4)
     ]);
   }
 }

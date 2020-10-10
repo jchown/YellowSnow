@@ -162,7 +162,8 @@ class _MainPageState extends State<MainPage> {
               controller: linesViewController,
               itemBuilder: (context, i) {
                 var line = annotations.lines[i];
-                return GestureDetector(onTap: () => handleLineClick(line), child: line.getWidget(annotations, colorScheme));
+                return GestureDetector(
+                    onTap: () => handleLineClick(line), child: line.getWidget(annotations, colorScheme));
               }),
         ),
       ),
@@ -170,7 +171,7 @@ class _MainPageState extends State<MainPage> {
           width: 60,
           child: Listener(
               onPointerDown: (pd) => handleMapTap(pd.localPosition),
-              onPointerMove: (pm) => { if (pm.buttons != 0) handleMapTap(pm.localPosition) },
+              onPointerMove: (pm) => {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
               behavior: HitTestBehavior.opaque,
               child: Container(
                   height: double.infinity,
@@ -181,7 +182,11 @@ class _MainPageState extends State<MainPage> {
                   ]))))
     ]);
 
-    var topRow = TopRow(workspace: this.workspace, filename: this.filename, onChangedFilename: _handleFilenameChanged, onTappedMenu: _handleTappedMenu);
+    var topRow = TopRow(
+        workspace: this.workspace,
+        filename: this.filename,
+        onChangedFilename: _handleFilenameChanged,
+        onTappedMenu: _handleTappedMenu);
 
     return Scaffold(
         key: scaffoldKey, drawer: drawerItems, body: Column(children: <Widget>[topRow, Expanded(child: mainView)]));
