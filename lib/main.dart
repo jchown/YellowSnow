@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:YellowSnow/annotations_file.dart';
 import 'package:YellowSnow/line.dart';
+import 'package:YellowSnow/timeline.dart';
 import 'package:YellowSnow/top_row.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -188,8 +191,16 @@ class _MainPageState extends State<MainPage> {
         onChangedFilename: _handleFilenameChanged,
         onTappedMenu: _handleTappedMenu);
 
-    return Scaffold(
-        key: scaffoldKey, drawer: drawerItems, body: Column(children: <Widget>[topRow, Expanded(child: mainView)]));
+    var rows = List<Widget>();
+    rows.add(topRow);
+    rows.add(Expanded(child: mainView));
+
+    if (annotations is AnnotationsFile) {
+      var bottomRow = SizedBox(height: 30, child: Timeline(annotations as AnnotationsFile));
+      rows.add(bottomRow);
+    }
+
+    return Scaffold(key: scaffoldKey, drawer: drawerItems, body: Column(children: rows));
   }
 
   Future<void> setTheme(String themeID) async {

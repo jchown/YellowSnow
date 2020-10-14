@@ -1,3 +1,4 @@
+import 'package:YellowSnow/annotate_git.dart';
 import 'package:YellowSnow/line_file.dart';
 
 import 'annotations.dart';
@@ -6,10 +7,16 @@ import 'annotations.dart';
 /// timestamps etc.
 
 class AnnotationsFile extends Annotations {
-  AnnotationsFile(List<LineFile> lines) : super(lines);
+  List<Commit> changes;
+
+  AnnotationsFile(this.changes, List<LineFile> lines) : super(lines);
 
   @override
   String getSummary(int line) {
     throw UnimplementedError();
+  }
+
+  List<Commit> getChanges() {
+    return changes;
   }
 }

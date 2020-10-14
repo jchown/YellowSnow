@@ -8,6 +8,14 @@ import 'line_dir.dart';
 import 'workspace.dart';
 import 'exec.dart';
 
+class Commit {
+  String sha;
+  int timestamp;
+  String comment = "";
+  String editor = "";
+  String editorEmail = "";
+}
+
 class AnnotateGit {
   static const String program = "git";
 
@@ -36,42 +44,71 @@ class AnnotateGit {
 
     var source = await File(filename).readAsLines();
     var lines = new List<LineFile>();
-    String editor = "";
-    String editorEmail = "";
-    String comment = "";
-    int time = 0;
+    Map<String, Commit> commits = Map();
 
+    var firstLine = true;
+    var currentCommit = Commit();
     var commandOutput = await command;
     for (var output in commandOutput) {
       if (output.length == 0) continue;
 
       if (output[0] != '\t') {
         int space = output.indexOf(' ');
+        String left = output.substring(0, space);
         String right = output.substring(space + 1);
-        if (output.startsWith("committer-time ")) {
-          time = int.parse(right);
-        } else if (output.startsWith("author ")) {
-          editor = right;
-        } else if (output.startsWith("author-mail ")) {
-          editorEmail += right;
-        } else if (output.startsWith("summary")) {
-          comment = right;
+
+        //  First line of info is always the hash with line numbers
+
+        if (firstLine) {
+          String sha = left;
+          if (!commits.containsKey(sha)) {
+            currentCommit.sha = sha;
+            commits[sha] = currentCommit;
+          } else {
+            currentCommit = commits[sha];
+          }
+
+          firstLine = false;
+        }
+
+        switch (left) {
+          case "committer-time":
+            currentCommit.timestamp = int.parse(right);
+            break;
+          case "author":
+            currentCommit.editor = right;
+            break;
+          case "author-mail":
+            currentCommit.editorEmail += right;
+            break;
+          case "summary":
+            currentCommit.comment = right;
+            break;
+          default:
+            stdout.writeln("? $output");
+            break;
         }
       } else {
-        if (editorEmail.length > 0) {
-          editor += " " + editorEmail;
-          editorEmail = "";
+        var editor = currentCommit.editor;
+        if (currentCommit.editorEmail.length > 0) {
+          editor += " " + currentCommit.editorEmail;
         }
 
         lines.add(LineFile(
             editor,
             source[lines.length], //output.Substring(1), Can't use this, git has removed whitespace
-            comment,
-            time));
+            currentCommit.comment,
+            currentCommit.timestamp));
+
+        firstLine = true;
+        currentCommit = Commit();
       }
     }
 
-    return AnnotationsFile(lines);
+    var changes = commits.values.toList();
+    changes.sort((a, b) => a.timestamp - b.timestamp);
+
+    return AnnotationsFile(changes, lines);
   }
 
   static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {
