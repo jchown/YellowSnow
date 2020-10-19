@@ -1,5 +1,6 @@
 import 'package:YellowSnow/annotate_git.dart';
 import 'package:YellowSnow/line_file.dart';
+import 'package:YellowSnow/workspace.dart';
 
 import 'annotations.dart';
 
@@ -7,9 +8,13 @@ import 'annotations.dart';
 /// timestamps etc.
 
 class AnnotationsFile extends Annotations {
-  List<Commit> changes;
+  final List<Commit> changes;
+  final Workspace _workspace;
+  final String _filename;
+  final AnnotationsFile _parent;
+  final Map<String, AnnotationsFile> _children = Map();
 
-  AnnotationsFile(this.changes, List<LineFile> lines) : super(lines);
+  AnnotationsFile(this._workspace, this._filename, this._parent, this.changes, List<LineFile> lines) : super(lines);
 
   @override
   String getSummary(int line) {
@@ -18,5 +23,17 @@ class AnnotationsFile extends Annotations {
 
   List<Commit> getChanges() {
     return changes;
+  }
+
+  Future<AnnotationsFile> getChildAnnotations(String sha) async {
+    if (_parent != null) return _parent.getChildAnnotations(sha);
+
+    if (_children.containsKey(sha)) return _children[sha];
+
+    return AnnotateGit.getAnnotationsFile(this, _workspace, _filename, sha);
+  }
+
+  AnnotationsFile getRoot() {
+    return (_parent == null) ? this : _parent.getRoot();
   }
 }

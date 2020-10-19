@@ -196,7 +196,7 @@ class _MainPageState extends State<MainPage> {
     rows.add(Expanded(child: mainView));
 
     if (annotations is AnnotationsFile) {
-      var bottomRow = SizedBox(height: 30, child: Timeline(annotations as AnnotationsFile));
+      var bottomRow = SizedBox(height: 30, child: Timeline((annotations as AnnotationsFile).getRoot(), onTimelineChanged));
       rows.add(bottomRow);
     }
 
@@ -249,5 +249,16 @@ class _MainPageState extends State<MainPage> {
 
   void _handleTappedMenu() {
     scaffoldKey.currentState.openDrawer();
+  }
+
+  void onTimelineChanged(String sha) async {
+    var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
+
+    setState(() {
+      workspace = workspace;
+      annotations = childAnnotations;
+      colorScheme = colorScheme;
+    });
+
   }
 }

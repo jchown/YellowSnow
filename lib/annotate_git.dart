@@ -29,16 +29,18 @@ class AnnotateGit {
     var entries = dir.listSync();
     var fse = (entries.firstWhere((f) => f.path == filename));
     if (fse is File)
-      return getAnnotationsFile(workspace, filename);
+      return getAnnotationsFile(null, workspace, filename, null);
     else
       return getAnnotationsDir(workspace, filename);
   }
 
-  static Future<Annotations> getAnnotationsFile(Workspace workspace, String filename) async {
+  static Future<AnnotationsFile> getAnnotationsFile(Annotations parent, Workspace workspace, String filename, String sha) async {
     var relFN = workspace.getRelativePath(filename);
     stdout.writeln("Filename: $filename -> $relFN");
 
     List<String> arguments = ["annotate", "-p", relFN];
+    if (sha != null)
+      arguments.add(sha);
 
     var command = Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
@@ -85,7 +87,7 @@ class AnnotateGit {
             currentCommit.comment = right;
             break;
           default:
-            stdout.writeln("? $output");
+            // stdout.writeln("? $output");
             break;
         }
       } else {
@@ -108,7 +110,7 @@ class AnnotateGit {
     var changes = commits.values.toList();
     changes.sort((a, b) => a.timestamp - b.timestamp);
 
-    return AnnotationsFile(changes, lines);
+    return AnnotationsFile(workspace, filename, parent, changes, lines);
   }
 
   static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {

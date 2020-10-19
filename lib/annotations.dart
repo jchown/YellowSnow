@@ -79,7 +79,6 @@ abstract class Annotations {
   static Annotations pending() {
     return new AnnotationsPending();
   }
-
 }
 
 class AnnotationsPending extends Annotations {
