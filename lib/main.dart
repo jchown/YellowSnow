@@ -196,7 +196,6 @@ class _MainPageState extends State<MainPage> {
     rows.add(Expanded(child: mainView));
 
     if (annotations is AnnotationsFile) {
-//      var bottomRow = SizedBox(height: 30, child: Timeline((annotations as AnnotationsFile).getRoot().changes, onTimelineChanged));
       var bottomRow = Container(color: Colors.blueGrey, child: Timeline((annotations as AnnotationsFile).getRoot().changes, onTimelineChanged));
       rows.add(bottomRow);
     }

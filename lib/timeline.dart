@@ -44,25 +44,9 @@ class _TimelineState extends State<Timeline> {
         value: _change.toDouble(),
         min: 0,
         max: (_commits.length - 1).toDouble(),
-        divisions: _commits.length,
+        divisions: (_commits.length - 1),
         label: "SHA: ${commit.sha}\n$date\n\n${commit.editor} ${commit.editorEmail}\n${commit.comment}",
-        onChanged: (double value) {
-          int i = value.toInt();
-          if (_change == i) return;
-          setState(() {
-            _change = i;
-            _commits = _commits;
-          });
-        },
-        onChangeEnd: (double value) {
-          int i = value.toInt();
-          if (_change == i) return;
-          setState(() {
-            _change = i;
-            _commits = _commits;
-            _onChangedCommit(commit.sha);
-          });
-        },
+        onChanged: (double value) => setChange(value.toInt())
       )),
       IconButton(
           icon: Icon(
@@ -76,20 +60,22 @@ class _TimelineState extends State<Timeline> {
 
   void onLeftButton() {
     if (_change > 0) {
-      setState(() {
-        _change = _change - 1;
-        _commits = _commits;
-        _onChangedCommit(_commits[_change - 1].sha);
-      });
+      setChange(_change - 1);
     }
   }
 
   void onRightButton() {
     if (_change < _commits.length - 1) {
+      setChange(_change + 1);
+    }
+  }
+
+  setChange(int change) {
+    if (_change != change) {
       setState(() {
-        _change = _change + 1;
+        _change = change;
         _commits = _commits;
-        _onChangedCommit(_commits[_change + 1].sha);
+        _onChangedCommit(_commits[change].sha);
       });
     }
   }

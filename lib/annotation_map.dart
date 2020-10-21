@@ -54,6 +54,8 @@ class RenderedMap extends RenderBox {
     if (annotations.lines.length == 0) {
       //  No annotations, no map
       paintEmpty(context, offset);
+      //  Cancel anything pending
+      rendering = null;
       return;
     }
 
@@ -66,10 +68,7 @@ class RenderedMap extends RenderBox {
     }
 
     if (image == null) {
-      TextSpan span = new TextSpan(style: new TextStyle(color: Colors.black), text: "Drawing...");
-      TextPainter tp = new TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
-      tp.layout();
-      tp.paint(context.canvas, offset.translate(size.width / 2, 10));
+      paintEmpty(context, offset);
     } else {
       var paint = Paint();
       context.canvas.drawImage(image, offset, paint);
@@ -83,7 +82,6 @@ class RenderedMap extends RenderBox {
 
   void paintEmpty(PaintingContext context, Offset offset) {
     image = null;
-    rendering = null;
     var paint = Paint();
     paint.color = theme?.bgOld ?? Colors.white;
     var rect = Rect.fromPoints(offset.translate(0, 0), offset.translate(size.width, size.height));
