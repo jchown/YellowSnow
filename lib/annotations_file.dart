@@ -30,7 +30,10 @@ class AnnotationsFile extends Annotations {
 
     if (_children.containsKey(sha)) return _children[sha];
 
-    return AnnotateGit.getAnnotationsFile(this, _workspace, _filename, sha);
+    var childAnnotations = AnnotateGit.getAnnotationsFile(this, _workspace, _filename, sha);
+    childAnnotations.then((result) => _children[sha] = result);
+
+    return childAnnotations;
   }
 
   AnnotationsFile getRoot() {

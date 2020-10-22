@@ -48,6 +48,7 @@ class RenderedMap extends RenderBox {
   }
 
   ui.Image image;
+  static ui.Image lastImage;
   MapRenderer rendering;
 
   void paint(PaintingContext context, Offset offset) {
@@ -68,7 +69,13 @@ class RenderedMap extends RenderBox {
     }
 
     if (image == null) {
-      paintEmpty(context, offset);
+      if (lastImage == null) {
+        paintEmpty(context, offset);
+      }
+      else {
+        var paint = Paint();
+        context.canvas.drawImage(lastImage, offset, paint);
+      }
     } else {
       var paint = Paint();
       context.canvas.drawImage(image, offset, paint);
@@ -76,7 +83,8 @@ class RenderedMap extends RenderBox {
   }
 
   void callback(ui.Image result) {
-    this.image = result;
+    image = result;
+    lastImage = result;
     widget.renderBox.markNeedsPaint();
   }
 
