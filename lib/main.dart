@@ -65,6 +65,8 @@ class _MainPageState extends State<MainPage> {
   ListView lines;
   AnnotationMap map;
   AnnotationZone zone;
+  String annotatingSha;
+  String annotatingNextSha;
 
   _MainPageState(this.filename) {
     annotations = Annotations.pending();
@@ -99,6 +101,8 @@ class _MainPageState extends State<MainPage> {
       workspace = newWorkspace;
       annotations = Annotations.pending();
       colorScheme = null;
+      annotatingSha = null;
+      annotatingNextSha = null;
     });
 
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
@@ -196,7 +200,9 @@ class _MainPageState extends State<MainPage> {
     rows.add(Expanded(child: mainView));
 
     if (annotations is AnnotationsFile) {
-      var bottomRow = Container(color: Colors.blueGrey, child: Timeline((annotations as AnnotationsFile).getRoot().changes, onTimelineChanged));
+      var bottomRow = Container(
+          color: Colors.blueGrey,
+          child: Timeline((annotations as AnnotationsFile).getRoot().changes, onTimelineChanged));
       rows.add(bottomRow);
     }
 
@@ -252,13 +258,42 @@ class _MainPageState extends State<MainPage> {
   }
 
   void onTimelineChanged(String sha) async {
-    var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
+    if (annotatingSha != null) {
+      //  Already doing something, we'll be next
+      annotatingNextSha = sha;
+      return;
+    }
 
-    setState(() {
-      workspace = workspace;
-      annotations = childAnnotations;
-      colorScheme = colorScheme;
-    });
+    try {
+      annotatingSha = sha;
 
+      var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
+
+      if (annotatingSha != sha) {
+        throw Exception("Overtaken");
+      }
+
+      //  We're still the required sha
+
+      setState(() {
+        workspace = workspace;
+        annotations = childAnnotations;
+        colorScheme = colorScheme;
+        annotatingSha = null;
+      });
+
+    } catch (e) {
+      //  Failed or overtkane
+
+      annotatingSha = null;
+
+      if (annotatingNextSha == null) {
+        var nextSha = annotatingNextSha;
+        annotatingNextSha = null;
+        onTimelineChanged(nextSha);
+      }
+
+      return;
+    }
   }
 }

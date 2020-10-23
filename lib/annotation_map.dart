@@ -104,7 +104,6 @@ class MapRenderer {
   int w, h;
 
   MapRenderer(this.render, this.w, this.h) {
-    stdout.writeln("Rendering map $w x $h");
 
     var annotations = render.annotations;
     var theme = render.theme;

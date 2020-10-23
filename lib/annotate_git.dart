@@ -36,7 +36,6 @@ class AnnotateGit {
 
   static Future<AnnotationsFile> getAnnotationsFile(Annotations parent, Workspace workspace, String filename, String sha) async {
     var relFN = workspace.getRelativePath(filename);
-    stdout.writeln("Filename: $filename -> $relFN");
 
     List<String> arguments = ["annotate", "-p", relFN];
     if (sha != null)

@@ -51,15 +51,11 @@ abstract class Annotations {
     }
 
     if (sorted.length == 1) {
-      stdout.write("Timestamps: ${sorted[0]}\n");
-
       colorMap[sorted[0]] = 0;
       return colorMap;
     }
 
     sorted.sort();
-
-    stdout.write("Timestamps: ${sorted.join(',')}\n");
 
     for (int i = 0; i < sorted.length; i++) {
       var timestamp = sorted[i];
@@ -70,8 +66,6 @@ abstract class Annotations {
       double t = t0 * t1 * t0 * t1 * t0 * t1;
       colorMap[timestamp] = (t * 255).floor();
     }
-
-    stdout.write("Levels: ${colorMap.values.join(',')}\n");
 
     return colorMap;
   }
