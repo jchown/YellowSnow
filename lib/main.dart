@@ -109,6 +109,7 @@ class _MainPageState extends State<MainPage> {
       colorScheme = null;
       annotatingSha = null;
       annotatingNextSha = null;
+      linesViewController.position.jumpTo(0);
     });
 
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
