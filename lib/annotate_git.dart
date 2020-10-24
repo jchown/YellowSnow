@@ -8,12 +8,13 @@ import 'line_dir.dart';
 import 'workspace.dart';
 import 'exec.dart';
 
-class Commit {
+class Change {
   String sha;
   int timestamp;
   String comment = "";
   String editor = "";
   String editorEmail = "";
+  String filename = "";     // So we can track renames
 }
 
 class AnnotateGit {
@@ -34,21 +35,25 @@ class AnnotateGit {
       return getAnnotationsDir(workspace, filename);
   }
 
-  static Future<AnnotationsFile> getAnnotationsFile(Annotations parent, Workspace workspace, String filename, String sha) async {
+  static Future<AnnotationsFile> getAnnotationsFile(AnnotationsFile parent, Workspace workspace, String filename, String sha) async {
     var relFN = workspace.getRelativePath(filename);
+    if (sha != null) {
+      // Watch out for renames
+      relFN = parent.getShaFilename(sha);
+    }
 
-    List<String> arguments = ["annotate", "-p", relFN];
+    List<String> arguments = ["annotate", "-p", "--stat", relFN];
     if (sha != null)
       arguments.add(sha);
 
     var command = Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
-    var source = await File(filename).readAsLines();
+//    var source = (sha == null) ? await File(filename).readAsLines() : Exec.run(program, ["show", "$sha:$relFN"], workspace.rootDir, {"GIT_PAGER": "cat"});
     var lines = new List<LineFile>();
-    Map<String, Commit> commits = Map();
+    Map<String, Change> commits = Map();
 
     var firstLine = true;
-    var currentCommit = Commit();
+    var currentCommit = Change();
     var commandOutput = await command;
     for (var output in commandOutput) {
       if (output.length == 0) continue;
@@ -85,6 +90,9 @@ class AnnotateGit {
           case "summary":
             currentCommit.comment = right;
             break;
+          case "filename":
+            currentCommit.filename = (Workspace.dirChar != '/') ? right.replaceAll("/", Workspace.dirChar) : right;
+            break;
           default:
             // stdout.writeln("? $output");
             break;
@@ -97,12 +105,12 @@ class AnnotateGit {
 
         lines.add(LineFile(
             editor,
-            source[lines.length], //output.Substring(1), Can't use this, git has removed whitespace
+            output.substring(1),
             currentCommit.comment,
             currentCommit.timestamp));
 
         firstLine = true;
-        currentCommit = Commit();
+        currentCommit = Change();
       }
     }
 
@@ -114,6 +122,9 @@ class AnnotateGit {
 
   static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {
     List<Future<LineDir>> files = new List<Future<LineDir>>();
+
+    if (directory.endsWith(Workspace.dirChar))
+      directory = directory.substring(0, directory.length - 1);
 
     for (var dirEntry in await Directory(directory).list().toList()) {
       files.add(getAnnotationDirEntry(workspace, directory, dirEntry));
@@ -164,7 +175,6 @@ class AnnotateGit {
       edited = 0;
     }
 
-    var absFilename = "$directory${Workspace.dirChar}$filename";
-    return LineDir(absFilename, editor, edited);
+    return LineDir("$directory${Workspace.dirChar}$filename", editor, edited);
   }
 }

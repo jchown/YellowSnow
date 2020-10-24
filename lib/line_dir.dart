@@ -10,6 +10,8 @@ class LineDir extends Line {
   String filename;
 
   LineDir(this.filename, this.author, int timestamp) {
+    if (this.filename.contains("${Workspace.dirChar}${Workspace.dirChar}"))
+      throw Exception("Bad filename: $filename");
     this.timestamp = timestamp;
   }
 

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class Timeline extends StatefulWidget {
   Timeline(this.commits, this.onChangedCommit, {Key key}) : super(key: key);
 
-  final List<Commit> commits;
+  final List<Change> commits;
   final ValueChanged<String> onChangedCommit;
 
   @override
@@ -15,17 +15,17 @@ class Timeline extends StatefulWidget {
 }
 
 class _TimelineState extends State<Timeline> {
-  List<Commit> _commits;
+  List<Change> _changes;
   int _change;
-  ValueChanged<String> _onChangedCommit;
+  ValueChanged<String> _onChangedSha;
 
-  _TimelineState(this._commits, this._change, this._onChangedCommit);
+  _TimelineState(this._changes, this._change, this._onChangedSha);
 
   @override
   Widget build(BuildContext context) {
-    if (_commits.length < 2) return Slider(value: 0, min: 0, max: 0);
+    if (_changes.length < 2) return Slider(value: 0, min: 0, max: 0);
 
-    var commit = _commits[_change];
+    var commit = _changes[_change];
     var dateFormat = DateFormat("yyyy.MM.dd HH:mm:ss");
     var date = dateFormat.format(new DateTime.fromMillisecondsSinceEpoch(commit.timestamp * 1000));
 
@@ -43,9 +43,9 @@ class _TimelineState extends State<Timeline> {
         inactiveColor: Colors.grey.withAlpha(128),
         value: _change.toDouble(),
         min: 0,
-        max: (_commits.length - 1).toDouble(),
-        divisions: (_commits.length - 1),
-        label: "SHA: ${commit.sha}\n$date\n\n${commit.editor} ${commit.editorEmail}\n${commit.comment}",
+        max: (_changes.length - 1).toDouble(),
+        divisions: (_changes.length - 1),
+        label: "SHA: ${commit.sha}\n${commit.filename}\n$date\n\n${commit.editor} ${commit.editorEmail}\n${commit.comment}",
         onChanged: (double value) => setChange(value.toInt())
       )),
       IconButton(
@@ -65,7 +65,7 @@ class _TimelineState extends State<Timeline> {
   }
 
   void onRightButton() {
-    if (_change < _commits.length - 1) {
+    if (_change < _changes.length - 1) {
       setChange(_change + 1);
     }
   }
@@ -74,8 +74,8 @@ class _TimelineState extends State<Timeline> {
     if (_change != change) {
       setState(() {
         _change = change;
-        _commits = _commits;
-        _onChangedCommit(_commits[change].sha);
+        _changes = _changes;
+        _onChangedSha(_changes[change].sha);
       });
     }
   }

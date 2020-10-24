@@ -29,9 +29,9 @@ class Exec {
 
     if (exitCode != 0) {
       stderr.write('Running "$program ${arguments.join(' ')}" failed with status code $exitCode:\n${Utf8Decoder().convert(output)}\n');
-      exit(exitCode);
     }
 
-    return Future<List<String>>.value(Utf8Decoder().convert(output).split("\n"));
+    var decoded = Utf8Decoder().convert(output);
+    return LineSplitter.split(decoded).toList();
   }
 }

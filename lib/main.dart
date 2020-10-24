@@ -21,7 +21,8 @@ void main(List<String> arguments) {
   String path = Directory.current.absolute.toString();
   if (arguments.length > 0) path = arguments[1];
 
-  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
+  path = "S:\\Work\\vTime\\vTag-Android\\Assets\\vTime\\Projects\\vTimeNow\\ConversationEvents.cs";
+//  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
 
   if (path.endsWith(Workspace.dirChar))
     path = path.substring(0, path.length - 1);
@@ -207,7 +208,7 @@ class _MainPageState extends State<MainPage> {
     if (annotations is AnnotationsFile) {
       var bottomRow = Container(
           color: Colors.blueGrey,
-          child: Timeline((annotations as AnnotationsFile).getRoot().changes, onTimelineChanged));
+          child: Timeline((annotations as AnnotationsFile).getRoot().getChanges(), onTimelineChanged));
       rows.add(bottomRow);
     }
 
