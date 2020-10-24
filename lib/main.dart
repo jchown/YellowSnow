@@ -20,7 +20,12 @@ import 'color_scheme.dart' as cs;
 void main(List<String> arguments) {
   String path = Directory.current.absolute.toString();
   if (arguments.length > 0) path = arguments[1];
-  runApp(YellowSnowApp.ofPath("S:\\Work\\vTime\\vTag-Android\\bin\\prebuild.xml"));
+
+  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
+
+  if (path.endsWith(Workspace.dirChar))
+    path = path.substring(0, path.length - 1);
+  runApp(YellowSnowApp.ofPath(path));
 }
 
 class YellowSnowApp extends StatelessWidget {

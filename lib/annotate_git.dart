@@ -113,55 +113,58 @@ class AnnotateGit {
   }
 
   static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {
-    List<LineDir> files = new List<LineDir>();
+    List<Future<LineDir>> files = new List<Future<LineDir>>();
 
     for (var dirEntry in await Directory(directory).list().toList()) {
-      var edited = dirEntry.statSync().modified.millisecondsSinceEpoch;
-
-      var filename = dirEntry.path.substring(dirEntry.path.lastIndexOf(Workspace.dirChar) + 1);
-
-      //  Get the most recent edit
-
-      List<String> arguments = [
-        "log",
-        "--pretty=format:ch:%H%nan:%an%nae:%ae%nat:%at%nsj:%sj",
-        "-n",
-        "1",
-        "${dirEntry.path}"
-      ];
-
-      var command = await Exec.run(program, arguments, workspace.rootDir, null);
-
-      String commitHash, authorName, authorEmail, subject, editor = "?";
-
-      for (String output in command) {
-        if (output.length == 0) continue;
-
-        stdout.writeln("| $output");
-        String key = output.substring(0, 3);
-        String value = output.substring(3);
-        if (key == "ch:")
-          commitHash = value;
-        else if (key == "ct:")
-          edited = int.parse(value);
-        else if (key == "an:")
-          authorName = value;
-        else if (key == "ae:")
-          authorEmail = value;
-        else if (key == "sj:") subject = value;
-      }
-
-      if (commitHash != null) {
-        editor = authorName;
-        if (authorEmail != null) editor += " <$authorEmail>";
-      } else {
-        edited = 0;
-      }
-
-      var absFilename = "$directory${Workspace.dirChar}$filename";
-      files.add(LineDir(absFilename, editor, edited));
+      files.add(getAnnotationDirEntry(workspace, directory, dirEntry));
     }
 
-    return new AnnotationsDir(files);
+    return new AnnotationsDir(await Future.wait(files));
+  }
+
+  static Future<LineDir> getAnnotationDirEntry(Workspace workspace, String directory, FileSystemEntity dirEntry) async {
+    var edited = dirEntry.statSync().modified.millisecondsSinceEpoch;
+
+    var filename = dirEntry.path.substring(dirEntry.path.lastIndexOf(Workspace.dirChar) + 1);
+
+    //  Get the most recent edit
+
+    List<String> arguments = [
+      "log",
+      "--pretty=format:ch:%H%nan:%an%nae:%ae%nat:%at%nsj:%sj",
+      "-n",
+      "1",
+      "${dirEntry.path}"
+    ];
+
+    var command = await Exec.run(program, arguments, workspace.rootDir, null);
+
+    String commitHash, authorName, authorEmail, subject, editor = "?";
+
+    for (String output in command) {
+      if (output.length == 0) continue;
+
+      String key = output.substring(0, 3);
+      String value = output.substring(3);
+      if (key == "ch:")
+        commitHash = value;
+      else if (key == "ct:")
+        edited = int.parse(value);
+      else if (key == "an:")
+        authorName = value;
+      else if (key == "ae:")
+        authorEmail = value;
+      else if (key == "sj:") subject = value;
+    }
+
+    if (commitHash != null) {
+      editor = authorName;
+      if (authorEmail != null) editor += " <$authorEmail>";
+    } else {
+      edited = 0;
+    }
+
+    var absFilename = "$directory${Workspace.dirChar}$filename";
+    return LineDir(absFilename, editor, edited);
   }
 }
