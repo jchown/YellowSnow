@@ -1,6 +1,6 @@
-import 'package:YellowSnow/annotate_git.dart';
-import 'package:YellowSnow/line_file.dart';
-import 'package:YellowSnow/workspace.dart';
+import 'annotate_git.dart';
+import 'line_file.dart';
+import 'workspace.dart';
 
 import 'annotations.dart';
 

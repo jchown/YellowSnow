@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:YellowSnow/annotations_file.dart';
-import 'package:YellowSnow/line.dart';
-import 'package:YellowSnow/timeline.dart';
-import 'package:YellowSnow/top_row.dart';
+import 'annotations_file.dart';
+import 'line.dart';
+import 'timeline.dart';
+import 'top_row.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'annotations.dart';
 import 'annotate_git.dart';
 import 'annotation_map.dart';
+import 'history.dart';
 import 'workspace.dart';
 import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
@@ -24,8 +25,7 @@ void main(List<String> arguments) {
   path = "S:\\Work\\vTime\\vTag-Android\\Assets\\vTime\\Projects\\vTimeNow\\ConversationEvents.cs";
 //  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
 
-  if (path.endsWith(Workspace.dirChar))
-    path = path.substring(0, path.length - 1);
+  if (path.endsWith(Workspace.dirChar)) path = path.substring(0, path.length - 1);
   runApp(YellowSnowApp.ofPath(path));
 }
 
@@ -52,13 +52,15 @@ class YellowSnowApp extends StatelessWidget {
 class MainPage extends StatefulWidget {
   MainPage({Key key, this.filename}) : super(key: key);
 
+  final History _history = new History();
   final String filename;
 
   @override
-  _MainPageState createState() => _MainPageState(filename);
+  _MainPageState createState() => _MainPageState(filename, _history);
 }
 
 class _MainPageState extends State<MainPage> {
+  History _history;
   String filename;
   Workspace workspace;
   Annotations annotations;
@@ -74,7 +76,7 @@ class _MainPageState extends State<MainPage> {
   String annotatingSha;
   String annotatingNextSha;
 
-  _MainPageState(this.filename) {
+  _MainPageState(this.filename, this._history) {
     annotations = Annotations.pending();
     workspace = null;
     colorScheme = null;
@@ -92,16 +94,23 @@ class _MainPageState extends State<MainPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
   }
 
-  void _handleFilenameChanged(String filename) {
+  void _handleChangedFilename(String filename) {
     load(filename);
   }
 
-  Future<void> load(String filename) async {
+  void _handleHistoryChangedFilename() {
+    load(_history.getCurrent(), addToHistory: false);
+  }
+
+  Future<void> load(String filename, {bool addToHistory = true}) async {
+    var history = _history;
     var prefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
     this.filename = filename;
-
-    stdout.writeln("Workspace: ${newWorkspace.rootDir}");
+    if (addToHistory) {
+      _history.push(filename);
+    }
+    stdout.writeln("Loading: $filename");
 
     setState(() {
       workspace = newWorkspace;
@@ -110,6 +119,7 @@ class _MainPageState extends State<MainPage> {
       annotatingSha = null;
       annotatingNextSha = null;
       linesViewController.position.jumpTo(0);
+      _history = history;
     });
 
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
@@ -119,17 +129,24 @@ class _MainPageState extends State<MainPage> {
       workspace = newWorkspace;
       annotations = newAnnotations;
       colorScheme = newTheme;
+      _history = history;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    var titleStyle = TextStyle(color: Colors.white, fontSize: 20);
+    var subtitleStyle = TextStyle(color: Colors.white, fontSize: 12);
     var drawerItems = Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Text('Drawer Header'),
+            child: Column(children: <Widget>[
+//              Image()
+              Text('Yellow Snow', style: titleStyle),
+              Text('See where your\nfellow developers\nleft their mark', style: subtitleStyle, textAlign: TextAlign.center)
+            ]),
             decoration: BoxDecoration(
               color: Colors.blueGrey,
             ),
@@ -197,9 +214,11 @@ class _MainPageState extends State<MainPage> {
     ]);
 
     var topRow = TopRow(
-        workspace: this.workspace,
-        filename: this.filename,
-        onChangedFilename: _handleFilenameChanged,
+        history: _history,
+        workspace: workspace,
+        filename: filename,
+        onChangedFilename: _handleChangedFilename,
+        onHistoryChangedFilename: _handleHistoryChangedFilename,
         onTappedMenu: _handleTappedMenu);
 
     var rows = List<Widget>();
@@ -220,11 +239,13 @@ class _MainPageState extends State<MainPage> {
     var oldWorkspace = workspace;
     var oldAnnotations = annotations;
     var newColorScheme = ColorSchemes.set(await SharedPreferences.getInstance(), themeID);
+    var history = _history;
 
     setState(() {
       workspace = oldWorkspace;
       annotations = oldAnnotations;
       colorScheme = newColorScheme;
+      _history = history;
     });
   }
 
@@ -273,6 +294,7 @@ class _MainPageState extends State<MainPage> {
 
     try {
       annotatingSha = sha;
+      var history = _history;
 
       var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
 
@@ -287,8 +309,8 @@ class _MainPageState extends State<MainPage> {
         annotations = childAnnotations;
         colorScheme = colorScheme;
         annotatingSha = null;
+        _history = history;
       });
-
     } catch (e) {
       //  Failed or overtkane
 

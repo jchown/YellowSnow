@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:YellowSnow/annotations.dart';
+import 'annotations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

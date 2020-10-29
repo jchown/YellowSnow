@@ -1,5 +1,5 @@
-import 'package:YellowSnow/annotations.dart';
-import 'package:YellowSnow/workspace.dart';
+import 'annotations.dart';
+import 'workspace.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'line.dart';
@@ -8,8 +8,9 @@ import 'color_scheme.dart';
 class LineDir extends Line {
   String author;
   String filename;
+  String subject;
 
-  LineDir(this.filename, this.author, int timestamp) {
+  LineDir(this.filename, this.author, this.subject, int timestamp) {
     if (this.filename.contains("${Workspace.dirChar}${Workspace.dirChar}"))
       throw Exception("Bad filename: $filename");
     this.timestamp = timestamp;

@@ -1,5 +1,4 @@
-import 'package:YellowSnow/color_scheme.dart';
-import 'package:YellowSnow/color_schemes.dart';
+import 'package:yellow_snow/color_schemes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_test/flutter_test.dart';

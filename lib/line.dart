@@ -1,4 +1,4 @@
-import 'package:YellowSnow/color_scheme.dart';
+import 'color_scheme.dart';
 import 'package:flutter/widgets.dart';
 
 import 'annotations.dart';

@@ -1,5 +1,4 @@
-import 'package:YellowSnow/annotate_git.dart';
-import 'package:YellowSnow/annotations_file.dart';
+import 'annotate_git.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +22,7 @@ class _TimelineState extends State<Timeline> {
 
   @override
   Widget build(BuildContext context) {
-    if (_changes.length < 2) return Slider(value: 0, min: 0, max: 0);
+    if (_changes.length < 2) return Slider(value: 0, min: 0, max: 0, onChanged: (v) => {});
 
     var commit = _changes[_change];
     var dateFormat = DateFormat("yyyy.MM.dd HH:mm:ss");

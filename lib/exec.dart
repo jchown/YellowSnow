@@ -5,7 +5,7 @@ import 'dart:io';
 class Exec {
   static Future<List<String>> run(String program, List<String> arguments, String workingDirectory, Map<String,String> environment) async {
 
-    stdout.write("> $program ${arguments.join(' ')}\n");
+//    stdout.write("> $program ${arguments.join(' ')}\n");
 
     var process = await Process.start(program, arguments,
         workingDirectory: workingDirectory,

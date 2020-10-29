@@ -48,7 +48,6 @@ class AnnotateGit {
 
     var command = Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
-//    var source = (sha == null) ? await File(filename).readAsLines() : Exec.run(program, ["show", "$sha:$relFN"], workspace.rootDir, {"GIT_PAGER": "cat"});
     var lines = new List<LineFile>();
     Map<String, Change> commits = Map();
 
@@ -75,6 +74,7 @@ class AnnotateGit {
           }
 
           firstLine = false;
+          continue;
         }
 
         switch (left) {
@@ -150,7 +150,7 @@ class AnnotateGit {
 
     var command = await Exec.run(program, arguments, workspace.rootDir, null);
 
-    String commitHash, authorName, authorEmail, subject, editor = "?";
+    String commitHash, authorName, authorEmail, editor = "?", subject = "";
 
     for (String output in command) {
       if (output.length == 0) continue;
@@ -175,6 +175,6 @@ class AnnotateGit {
       edited = 0;
     }
 
-    return LineDir("$directory${Workspace.dirChar}$filename", editor, edited);
+    return LineDir("$directory${Workspace.dirChar}$filename", editor, subject, edited);
   }
 }
