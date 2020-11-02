@@ -23,7 +23,7 @@ class LineFile extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, cs.ColorScheme theme) {
+  Widget getWidget(Annotations annotations, cs.ColorScheme theme, double fontSize) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);
@@ -40,7 +40,7 @@ class LineFile extends Line {
                   child: Text(author,
                       maxLines: 1,
                       overflow: TextOverflow.clip,
-                      style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol))))),
+                      style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontSize))))),
       SizedBox(width: 4),
       new Expanded(
           child: Container(
@@ -49,7 +49,7 @@ class LineFile extends Line {
               child: Text(source,
                   maxLines: 1,
                   textWidthBasis: TextWidthBasis.parent,
-                  style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol)))),
+                  style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontSize)))),
       SizedBox(width: 4)
     ]);
   }

@@ -78,6 +78,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.4"
+  easy_localization:
+    dependency: "direct main"
+    description:
+      name: easy_localization
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.3.3"
   fake_async:
     dependency: transitive
     description:
@@ -105,9 +112,14 @@ packages:
       name: file_picker
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.7"
+    version: "2.0.11"
   flutter:
     dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  flutter_localizations:
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -225,7 +237,7 @@ packages:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.12"
+    version: "0.5.12+2"
   shared_preferences_linux:
     dependency: transitive
     description:

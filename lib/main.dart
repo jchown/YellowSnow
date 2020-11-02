@@ -1,20 +1,22 @@
 import 'dart:io';
 
-import 'annotations_file.dart';
-import 'line.dart';
-import 'timeline.dart';
-import 'top_row.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'annotations.dart';
 import 'annotate_git.dart';
 import 'annotation_map.dart';
 import 'history.dart';
 import 'workspace.dart';
+import 'annotations_file.dart';
+import 'line.dart';
+import 'timeline.dart';
+import 'top_row.dart';
 import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
@@ -38,14 +40,19 @@ class YellowSnowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Yellow Snow',
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: MainPage(filename: initialPath),
-    );
+    initializeDateFormatting(null, null);
+    return EasyLocalization(
+        supportedLocales: [Locale('en', 'US'), Locale('en', 'GB')],
+        path: 'assets/translations',
+        fallbackLocale: Locale('en', 'US'),
+        child: MaterialApp(
+          title: 'Yellow Snow',
+          theme: ThemeData(
+            primarySwatch: Colors.blueGrey,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: MainPage(filename: initialPath),
+        ));
   }
 }
 
@@ -64,7 +71,11 @@ class _MainPageState extends State<MainPage> {
   String filename;
   Workspace workspace;
   Annotations annotations;
-  cs.ColorScheme colorScheme;
+  cs.ColorScheme _colorScheme;
+
+  static const String fontSizePrefsKey = "fontSize";
+  static const double defaultFontSize = 12;
+  double _fontSize;
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
@@ -79,7 +90,7 @@ class _MainPageState extends State<MainPage> {
   _MainPageState(this.filename, this._history) {
     annotations = Annotations.pending();
     workspace = null;
-    colorScheme = null;
+    _colorScheme = null;
     linesViewController.addListener(onScrollChanged);
     load(filename);
   }
@@ -104,7 +115,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> load(String filename, {bool addToHistory = true}) async {
     var history = _history;
-    var prefs = SharedPreferences.getInstance();
+    var fPrefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
     this.filename = filename;
     if (addToHistory) {
@@ -115,7 +126,7 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       workspace = newWorkspace;
       annotations = Annotations.pending();
-      colorScheme = null;
+      _colorScheme = null;
       annotatingSha = null;
       annotatingNextSha = null;
       linesViewController.position.jumpTo(0);
@@ -123,12 +134,14 @@ class _MainPageState extends State<MainPage> {
     });
 
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
-    var newTheme = ColorSchemes.get(await prefs);
+    var prefs = await fPrefs;
+    var newTheme = ColorSchemes.get(prefs);
+    _fontSize = prefs.containsKey(fontSizePrefsKey) ? prefs.getDouble(fontSizePrefsKey) : defaultFontSize;
 
     setState(() {
       workspace = newWorkspace;
       annotations = newAnnotations;
-      colorScheme = newTheme;
+      _colorScheme = newTheme;
       _history = history;
     });
   }
@@ -137,6 +150,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     var titleStyle = TextStyle(color: Colors.white, fontSize: 20);
     var subtitleStyle = TextStyle(color: Colors.white, fontSize: 12);
+    var currentFontSize = _fontSize ?? defaultFontSize;
     var drawerItems = Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -145,39 +159,45 @@ class _MainPageState extends State<MainPage> {
             child: Column(children: <Widget>[
 //              Image()
               Text('Yellow Snow', style: titleStyle),
-              Text('See where your\nfellow developers\nleft their mark', style: subtitleStyle, textAlign: TextAlign.center)
+              Align(
+                  child: Text('See where your\nfellow developers\nleft their mark',
+                      style: subtitleStyle, textAlign: TextAlign.center))
             ]),
             decoration: BoxDecoration(
               color: Colors.blueGrey,
             ),
           ),
-          ListTile(title: Text('Open File'), onTap: onOpenFile),
+          ListTile(leading: Icon(Icons.folder_open), title: Text('Open File'), onTap: onOpenFile),
           ExpansionTile(
-            title: Text("Theme"),
+            leading: Icon(Icons.color_lens),
+            title: Text("t_ColorScheme").tr(),
             children: <Widget>[
               ListTile(
                 title: Text('Yellow Snow'),
                 onTap: () {
-                  setTheme("YS");
+                  setColourScheme("YS");
                   Navigator.pop(context);
                 },
               ),
               ListTile(
                 title: Text('Purple Stain'),
                 onTap: () {
-                  setTheme("PS");
+                  setColourScheme("PS");
                   Navigator.pop(context);
                 },
               )
             ],
           ),
-          ListTile(
-            title: Text('Font Size'),
-            onTap: () {
-              // Update the state of the app.
-              // ...
-            },
-          ),
+          ExpansionTile(
+              leading: Icon(Icons.format_size),
+              title: Text('Font Size ${currentFontSize}pt'),
+              children: <Widget>[
+                Slider(
+                    value: currentFontSize,
+                    min: 6,
+                    max: 20,
+                    onChanged: (double value) => setFontHeight((value * 10).floorToDouble() / 10))
+              ]),
         ],
       ),
     );
@@ -194,7 +214,7 @@ class _MainPageState extends State<MainPage> {
               itemBuilder: (context, i) {
                 var line = annotations.lines[i];
                 return GestureDetector(
-                    onTap: () => handleLineClick(line), child: line.getWidget(annotations, colorScheme));
+                    onTap: () => handleLineClick(line), child: line.getWidget(annotations, _colorScheme, _fontSize));
               }),
         ),
       ),
@@ -208,8 +228,8 @@ class _MainPageState extends State<MainPage> {
                   height: double.infinity,
                   width: double.infinity,
                   child: Stack(fit: StackFit.expand, children: <Widget>[
-                    map = AnnotationMap(annotations, colorScheme),
-                    zone = AnnotationZone(annotations, colorScheme)
+                    map = AnnotationMap(annotations, _colorScheme),
+                    zone = AnnotationZone(annotations, _colorScheme)
                   ]))))
     ]);
 
@@ -235,17 +255,26 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(key: scaffoldKey, drawer: drawerItems, body: Column(children: rows));
   }
 
-  Future<void> setTheme(String themeID) async {
+  Future<void> setColourScheme(String schemeID) async {
     var oldWorkspace = workspace;
     var oldAnnotations = annotations;
-    var newColorScheme = ColorSchemes.set(await SharedPreferences.getInstance(), themeID);
+    var newColorScheme = ColorSchemes.set(await SharedPreferences.getInstance(), schemeID);
     var history = _history;
 
     setState(() {
       workspace = oldWorkspace;
       annotations = oldAnnotations;
-      colorScheme = newColorScheme;
+      _colorScheme = newColorScheme;
       _history = history;
+    });
+  }
+
+  Future<void> setFontHeight(double fontSize) async {
+
+    SharedPreferences.getInstance().then((prefs) => prefs.setDouble(fontSizePrefsKey, fontSize));
+
+    setState(() {
+      _fontSize = fontSize;
     });
   }
 
@@ -307,7 +336,7 @@ class _MainPageState extends State<MainPage> {
       setState(() {
         workspace = workspace;
         annotations = childAnnotations;
-        colorScheme = colorScheme;
+        _colorScheme = _colorScheme;
         annotatingSha = null;
         _history = history;
       });

@@ -18,6 +18,7 @@ dependencies:
   shared_preferences: ^0.5.12
   image: ^2.1.18
   file_picker: ^2.0.6
+  easy_localization: ^2.3.3
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +33,6 @@ flutter:
         - asset: fonts/RobotoMono-Regular.ttf
         - asset: fonts/RobotoMono-Bold.ttf
           weight: 700
+
+  assets:
+    - assets/translations/

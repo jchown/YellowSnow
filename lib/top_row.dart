@@ -53,16 +53,9 @@ class TopRow extends StatelessWidget {
         tooltip: history.hasFwd() ? history.getFwd() : null,
         onPressed: history.hasFwd() ? handleFwd : null,
       ),
-      IconButton(
-        icon: Icon(
-          Icons.refresh,
-          color: Colors.white,
-        ),
-        onPressed: () => onTappedMenu(),
-      )
     ];
 
-    if (filename != "") {
+    if (filename != "" && workspace != null) {
       var style = TextStyle(color: Colors.white);
       topRowWidgets.add(OutlineButton(
           child: Row(children: <Widget>[Icon(Icons.home, color: Colors.white), SizedBox(width: 8), Text(workspace.rootDir, style: style)]),

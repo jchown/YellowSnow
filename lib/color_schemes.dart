@@ -33,8 +33,8 @@ class ColorSchemes {
     }
   }
 
-  static set(SharedPreferences preferences, String themeID) {
-    preferences.setString(prefsKey, themeID);
+  static set(SharedPreferences preferences, String schemeID) {
+    preferences.setString(prefsKey, schemeID);
     return get(preferences);
   }
 }
