@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 class ColorScheme {
@@ -40,5 +43,43 @@ class ColorScheme {
     double b = dB * l + from.blue;
 
     return Color.fromARGB(0xff, r.toInt(), g.toInt(), b.toInt());
+  }
+
+  Image _image;
+  Completer<Image> _rendering;
+
+  Future<Image> getThumbnail() async {
+    if (_image != null)
+      return Future.value(_image);
+
+    if (_rendering != null)
+      return _rendering.future;
+
+    _rendering = Completer<Image>();
+
+    var w = 64;
+    var h = 64;
+    var pixels = Uint8List(w * h * 4);
+    var random = Random(10101);
+
+    int i = 0;
+    for (int y = 0; y < h; y++) {
+      var bgCol = getBGColor(random.nextInt(255));
+      for (int x = 0; x < w; x++) {
+        pixels[i++] = bgCol.red;
+        pixels[i++] = bgCol.green;
+        pixels[i++] = bgCol.blue;
+        pixels[i++] = 0xff;
+      }
+    }
+
+    decodeImageFromPixels(pixels, w, h, PixelFormat.rgba8888, callback);
+    return _rendering.future;
+  }
+
+  callback(Image image) {
+    this._image = image;
+    _rendering.complete(image);
+    _rendering = null;
   }
 }

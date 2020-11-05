@@ -24,10 +24,12 @@ void main(List<String> arguments) {
   String path = Directory.current.absolute.toString();
   if (arguments.length > 0) path = arguments[1];
 
-  path = "S:\\Work\\vTime\\vTag-Android\\Assets\\vTime\\Projects\\vTimeNow\\ConversationEvents.cs";
+  path =
+      "S:\\Work\\vTime\\vTag-Android\\Assets\\vTime\\Projects\\vTimeNow\\ConversationEvents.cs";
 //  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
 
-  if (path.endsWith(Workspace.dirChar)) path = path.substring(0, path.length - 1);
+  if (path.endsWith(Workspace.dirChar))
+    path = path.substring(0, path.length - 1);
   runApp(YellowSnowApp.ofPath(path));
 }
 
@@ -133,10 +135,13 @@ class _MainPageState extends State<MainPage> {
       _history = history;
     });
 
-    var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
+    var newAnnotations =
+        await AnnotateGit.getAnnotations(newWorkspace, filename);
     var prefs = await fPrefs;
     var newTheme = ColorSchemes.get(prefs);
-    _fontSize = prefs.containsKey(fontSizePrefsKey) ? prefs.getDouble(fontSizePrefsKey) : defaultFontSize;
+    _fontSize = prefs.containsKey(fontSizePrefsKey)
+        ? prefs.getDouble(fontSizePrefsKey)
+        : defaultFontSize;
 
     setState(() {
       workspace = newWorkspace;
@@ -155,31 +160,46 @@ class _MainPageState extends State<MainPage> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
-            child: Column(children: <Widget>[
+          Container(
+              height: 140.0,
+              child: DrawerHeader(
+                child: Column(children: <Widget>[
 //              Image()
-              Text('Yellow Snow', style: titleStyle),
-              Align(
-                  child: Text('See where your\nfellow developers\nleft their mark',
-                      style: subtitleStyle, textAlign: TextAlign.center))
-            ]),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey,
-            ),
-          ),
-          ListTile(leading: Icon(Icons.folder_open), title: Text('Open File'), onTap: onOpenFile),
+                  Text('Yellow Snow', style: titleStyle),
+                  Align(
+                      child: Text(
+                          '\nSee where your\nfellow developers\nleft their mark',
+                          style: subtitleStyle,
+                          textAlign: TextAlign.center))
+                ]),
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey,
+                ),
+              )),
+          ListTile(
+              leading: Icon(Icons.folder_open),
+              title: Text('Open File'),
+              onTap: onOpenFile),
           ExpansionTile(
             leading: Icon(Icons.color_lens),
             title: Text("t_ColorScheme").tr(),
             children: <Widget>[
               ListTile(
                 title: Text('Yellow Snow'),
+                leading: Image(
+                    image: AssetImage("assets/images/YS.png"),
+                    width: 20,
+                    height: 20),
                 onTap: () {
                   setColourScheme("YS");
                   Navigator.pop(context);
                 },
               ),
               ListTile(
+                leading: Image(
+                    image: AssetImage("assets/images/PS.png"),
+                    width: 20,
+                    height: 20),
                 title: Text('Purple Stain'),
                 onTap: () {
                   setColourScheme("PS");
@@ -196,7 +216,8 @@ class _MainPageState extends State<MainPage> {
                     value: currentFontSize,
                     min: 6,
                     max: 20,
-                    onChanged: (double value) => setFontHeight((value * 10).floorToDouble() / 10))
+                    onChanged: (double value) =>
+                        setFontHeight((value * 10).floorToDouble() / 10))
               ]),
         ],
       ),
@@ -214,7 +235,9 @@ class _MainPageState extends State<MainPage> {
               itemBuilder: (context, i) {
                 var line = annotations.lines[i];
                 return GestureDetector(
-                    onTap: () => handleLineClick(line), child: line.getWidget(annotations, _colorScheme, _fontSize));
+                    onTap: () => handleLineClick(line),
+                    child:
+                        line.getWidget(annotations, _colorScheme, _fontSize));
               }),
         ),
       ),
@@ -222,7 +245,8 @@ class _MainPageState extends State<MainPage> {
           width: 60,
           child: Listener(
               onPointerDown: (pd) => handleMapTap(pd.localPosition),
-              onPointerMove: (pm) => {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
+              onPointerMove: (pm) =>
+                  {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
               behavior: HitTestBehavior.opaque,
               child: Container(
                   height: double.infinity,
@@ -248,17 +272,21 @@ class _MainPageState extends State<MainPage> {
     if (annotations is AnnotationsFile) {
       var bottomRow = Container(
           color: Colors.blueGrey,
-          child: Timeline((annotations as AnnotationsFile).getRoot().getChanges(), onTimelineChanged));
+          child: Timeline(
+              (annotations as AnnotationsFile).getRoot().getChanges(),
+              onTimelineChanged));
       rows.add(bottomRow);
     }
 
-    return Scaffold(key: scaffoldKey, drawer: drawerItems, body: Column(children: rows));
+    return Scaffold(
+        key: scaffoldKey, drawer: drawerItems, body: Column(children: rows));
   }
 
   Future<void> setColourScheme(String schemeID) async {
     var oldWorkspace = workspace;
     var oldAnnotations = annotations;
-    var newColorScheme = ColorSchemes.set(await SharedPreferences.getInstance(), schemeID);
+    var newColorScheme =
+        ColorSchemes.set(await SharedPreferences.getInstance(), schemeID);
     var history = _history;
 
     setState(() {
@@ -270,8 +298,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> setFontHeight(double fontSize) async {
-
-    SharedPreferences.getInstance().then((prefs) => prefs.setDouble(fontSizePrefsKey, fontSize));
+    SharedPreferences.getInstance()
+        .then((prefs) => prefs.setDouble(fontSizePrefsKey, fontSize));
 
     setState(() {
       _fontSize = fontSize;
@@ -325,7 +353,8 @@ class _MainPageState extends State<MainPage> {
       annotatingSha = sha;
       var history = _history;
 
-      var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
+      var childAnnotations =
+          await (annotations as AnnotationsFile).getChildAnnotations(sha);
 
       if (annotatingSha != sha) {
         throw Exception("Overtaken");
