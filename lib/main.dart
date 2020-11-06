@@ -161,14 +161,14 @@ class _MainPageState extends State<MainPage> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           Container(
-              height: 140.0,
+              height: 100.0,
               child: DrawerHeader(
                 child: Column(children: <Widget>[
 //              Image()
                   Text('Yellow Snow', style: titleStyle),
                   Align(
                       child: Text(
-                          '\nSee where your\nfellow developers\nleft their mark',
+                          '\nSee where your fellow developers left their mark',
                           style: subtitleStyle,
                           textAlign: TextAlign.center))
                 ]),
@@ -223,39 +223,41 @@ class _MainPageState extends State<MainPage> {
       ),
     );
 
-    var mainView = Row(children: <Widget>[
-      Expanded(
-        child: DraggableScrollbar.semicircle(
-          alwaysVisibleScrollThumb: true,
-          controller: linesViewController,
-          child: lines = ListView.builder(
-              key: listKey,
-              itemCount: annotations.lines.length,
+    var mainView = Container(
+        color: _colorScheme?.getBGColor(0),
+        child: Row(children: <Widget>[
+          Expanded(
+            child: DraggableScrollbar.semicircle(
+              alwaysVisibleScrollThumb: true,
               controller: linesViewController,
-              itemBuilder: (context, i) {
-                var line = annotations.lines[i];
-                return GestureDetector(
-                    onTap: () => handleLineClick(line),
-                    child:
-                        line.getWidget(annotations, _colorScheme, _fontSize));
-              }),
-        ),
-      ),
-      SizedBox(
-          width: 60,
-          child: Listener(
-              onPointerDown: (pd) => handleMapTap(pd.localPosition),
-              onPointerMove: (pm) =>
-                  {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  child: Stack(fit: StackFit.expand, children: <Widget>[
-                    map = AnnotationMap(annotations, _colorScheme),
-                    zone = AnnotationZone(annotations, _colorScheme)
-                  ]))))
-    ]);
+              child: lines = ListView.builder(
+                  key: listKey,
+                  itemCount: annotations.lines.length,
+                  controller: linesViewController,
+                  itemBuilder: (context, i) {
+                    var line = annotations.lines[i];
+                    return GestureDetector(
+                        onTap: () => handleLineClick(line),
+                        child: line.getWidget(
+                            annotations, _colorScheme, _fontSize));
+                  }),
+            ),
+          ),
+          SizedBox(
+              width: 60,
+              child: Listener(
+                  onPointerDown: (pd) => handleMapTap(pd.localPosition),
+                  onPointerMove: (pm) =>
+                      {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      child: Stack(fit: StackFit.expand, children: <Widget>[
+                        map = AnnotationMap(annotations, _colorScheme),
+                        zone = AnnotationZone(annotations, _colorScheme)
+                      ]))))
+        ]));
 
     var topRow = TopRow(
         history: _history,
