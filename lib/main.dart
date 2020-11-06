@@ -79,6 +79,10 @@ class _MainPageState extends State<MainPage> {
   static const double defaultFontSize = 12;
   double _fontSize;
 
+  static const String tabSizePrefsKey = "tabSize";
+  static const int defaultTabSize = 4;
+  int _tabSize;
+
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
   final ScrollController linesViewController = ScrollController();
@@ -142,6 +146,10 @@ class _MainPageState extends State<MainPage> {
     _fontSize = prefs.containsKey(fontSizePrefsKey)
         ? prefs.getDouble(fontSizePrefsKey)
         : defaultFontSize;
+
+    _tabSize = prefs.containsKey(tabSizePrefsKey)
+        ? prefs.getInt(tabSizePrefsKey)
+        : defaultTabSize;
 
     setState(() {
       workspace = newWorkspace;
@@ -239,7 +247,7 @@ class _MainPageState extends State<MainPage> {
                     return GestureDetector(
                         onTap: () => handleLineClick(line),
                         child: line.getWidget(
-                            annotations, _colorScheme, _fontSize));
+                            annotations, _colorScheme, _fontSize, _tabSize));
                   }),
             ),
           ),

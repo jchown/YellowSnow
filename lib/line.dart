@@ -7,7 +7,7 @@ import 'annotations.dart';
 abstract class Line {
   int timestamp;
 
-  Widget getWidget(Annotations annotations, ColorScheme theme, double fontSize);
+  Widget getWidget(Annotations annotations, ColorScheme theme, double fontSize, int tabSize);
 
   String getFilename();
 }

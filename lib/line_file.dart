@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'annotations.dart';
 import 'line.dart';
+import 'string_ext.dart';
 import 'color_scheme.dart' as cs;
 
 class LineFile extends Line {
@@ -23,7 +24,7 @@ class LineFile extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, cs.ColorScheme theme, double fontSize) {
+  Widget getWidget(Annotations annotations, cs.ColorScheme theme, double fontSize, int tabSize) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);
@@ -46,7 +47,7 @@ class LineFile extends Line {
           child: Container(
               color: bgCol,
               width: double.infinity,
-              child: Text(source,
+              child: Text(source.replaceTabs(tabSize),
                   maxLines: 1,
                   textWidthBasis: TextWidthBasis.parent,
                   style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontSize)))),

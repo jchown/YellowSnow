@@ -21,7 +21,7 @@ class LineDir extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, ColorScheme theme, double fontHeight) {
+  Widget getWidget(Annotations annotations, ColorScheme theme, double fontHeight, int tabSize) {
     int level = annotations.getLevel(timestamp);
     var bgCol = theme.getBGColor(level);
     var fgCol = theme.getFGColor(level);
