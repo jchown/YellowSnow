@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:filepicker_windows/filepicker_windows.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -58,6 +59,10 @@ class YellowSnowApp extends StatelessWidget {
   }
 }
 
+class FileOpenIntent extends Intent {
+  const FileOpenIntent();
+}
+
 class MainPage extends StatefulWidget {
   MainPage({Key key, this.filename}) : super(key: key);
 
@@ -86,6 +91,7 @@ class _MainPageState extends State<MainPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
   final ScrollController linesViewController = ScrollController();
+  var _shortcutManager = ShortcutManager();
 
   ListView lines;
   AnnotationMap map;
@@ -172,7 +178,6 @@ class _MainPageState extends State<MainPage> {
               height: 100.0,
               child: DrawerHeader(
                 child: Column(children: <Widget>[
-//              Image()
                   Text('Yellow Snow', style: titleStyle),
                   Align(
                       child: Text(
@@ -289,7 +294,18 @@ class _MainPageState extends State<MainPage> {
     }
 
     return Scaffold(
-        key: scaffoldKey, drawer: drawerItems, body: Column(children: rows));
+        key: scaffoldKey,
+        drawer: drawerItems,
+        body: Shortcuts(
+            manager: _shortcutManager,
+            shortcuts: <LogicalKeySet, Intent>{
+              LogicalKeySet(
+                      LogicalKeyboardKey.control, LogicalKeyboardKey.keyO):
+                  FileOpenIntent()            },
+            child: Actions(actions: <Type, Action<Intent>>{
+              FileOpenIntent: CallbackAction<FileOpenIntent>(
+                  onInvoke: (FileOpenIntent intent) => onOpenFile()),
+            }, child: Focus(autofocus: true, child: Column(children: rows)))));
   }
 
   Future<void> setColourScheme(String schemeID) async {
@@ -331,8 +347,12 @@ class _MainPageState extends State<MainPage> {
   Future<void> onHome() async {}
 
   Future<void> onOpenFile() async {
-    var result = await FilePicker.platform.pickFiles(allowMultiple: false);
-    if (result.count == 1) load(result.files[0].toString());
+    var picker = OpenFilePicker()
+      ..title = "Choose File";
+//      ..folder = filename != null ? filename.substring(0, filename.lastIndexOf(Workspace.dirChar)) : null;
+
+    var file = picker.getFile();
+    if (file != null && file.existsSync()) load(file.path);
   }
 
   void handleLineClick(Line line) {
