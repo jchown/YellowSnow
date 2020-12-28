@@ -59,6 +59,9 @@ class AnnotateGit {
 
       if (output[0] != '\t') {
         int space = output.indexOf(' ');
+        if (space < 0)
+          continue;
+
         String left = output.substring(0, space);
         String right = output.substring(space + 1);
 
