@@ -42,7 +42,7 @@ class AnnotateGit {
       relFN = parent.getShaFilename(sha);
     }
 
-    List<String> arguments = ["annotate", "-p", "--stat", relFN];
+    List<String> arguments = ["annotate", "-p", "-w", "--stat", relFN];
     if (sha != null)
       arguments.add(sha);
 
