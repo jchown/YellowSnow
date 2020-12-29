@@ -2,7 +2,7 @@ name: yellow_snow
 description: See where your fellow developers left their mark
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 0.1.0
+version: 0.1.1
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -16,6 +16,8 @@ dependencies:
   image: ^2.1.18
   filepicker_windows: ^1.0.0
   easy_localization: ^2.3.3
+  awesome_dialog: ^1.2.1
+  yaml: ^2.2.1
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +36,4 @@ flutter:
   assets:
     - assets/images/
     - assets/translations/
+    - pubspec.yaml

@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:yaml/yaml.dart';
 
 import 'annotations.dart';
 import 'annotate_git.dart';
@@ -232,6 +234,10 @@ class _MainPageState extends State<MainPage> {
                     onChanged: (double value) =>
                         setFontHeight((value * 10).floorToDouble() / 10))
               ]),
+          ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About YellowSnow'),
+              onTap: onAbout),
         ],
       ),
     );
@@ -353,6 +359,21 @@ class _MainPageState extends State<MainPage> {
 
     var file = picker.getFile();
     if (file != null && file.existsSync()) load(file.path);
+  }
+
+  Future<void> onAbout() async {
+
+    var pubspec = await rootBundle.loadString("pubspec.yaml");
+    var yaml = loadYaml(pubspec);
+    var version = yaml["version"];
+
+    AwesomeDialog(
+            context: context,
+            dialogType: DialogType.NO_HEADER,
+            title: 'About YellowSnow',
+            desc: '\nAuthor: Jason Chown\n\nVersion: $version\n',
+            btnOkOnPress: () {},
+            )..show();
   }
 
   void handleLineClick(Line line) {
