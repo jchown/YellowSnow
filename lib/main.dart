@@ -24,12 +24,8 @@ import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
 void main(List<String> arguments) {
-  String path = Directory.current.absolute.toString();
+  String path = Directory.current.absolute.path;
   if (arguments.length > 0) path = arguments[1];
-
-  path =
-      "S:\\Work\\vTime\\vTag-Android\\Assets\\vTime\\Projects\\vTimeNow\\ConversationEvents.cs";
-//  path = "S:\\Work\\vTime\\vTag-Android\\bin\\";
 
   if (path.endsWith(Workspace.dirChar))
     path = path.substring(0, path.length - 1);
