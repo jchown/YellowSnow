@@ -3,7 +3,7 @@ import 'dart:io';
 class Workspace {
   static const dirChar = '\\';
 
-  /// The base directory of the
+  /// The base directory of the workspace. Always terminated with dirChar
 
   String rootDir;
 

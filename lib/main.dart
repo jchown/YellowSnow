@@ -24,8 +24,8 @@ import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
 void main(List<String> arguments) {
-  String path = Directory.current.absolute.path + Workspace.dirChar;
-  if (arguments.length > 0) path = arguments[1];
+
+  final path = arguments.length > 0 ? arguments[1] : Directory.current.absolute.path + Workspace.dirChar;
 
   runApp(YellowSnowApp.ofPath(path));
 }
