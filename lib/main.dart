@@ -24,11 +24,9 @@ import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
 void main(List<String> arguments) {
-  String path = Directory.current.absolute.path;
+  String path = Directory.current.absolute.path + Workspace.dirChar;
   if (arguments.length > 0) path = arguments[1];
 
-  if (path.endsWith(Workspace.dirChar))
-    path = path.substring(0, path.length - 1);
   runApp(YellowSnowApp.ofPath(path));
 }
 
@@ -143,8 +141,7 @@ class _MainPageState extends State<MainPage> {
       _history = history;
     });
 
-    var newAnnotations =
-        await AnnotateGit.getAnnotations(newWorkspace, filename);
+    var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
     var prefs = await fPrefs;
     var newTheme = ColorSchemes.get(prefs);
     _fontSize = prefs.containsKey(fontSizePrefsKey)

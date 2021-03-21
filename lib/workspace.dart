@@ -8,12 +8,19 @@ class Workspace {
   String rootDir;
 
   Workspace(String rootDir) {
-    this.rootDir = rootDir + dirChar;
+    this.rootDir = rootDir[rootDir.length - 1] == dirChar ? rootDir : rootDir + dirChar;
   }
 
   /// Find a workspace root by searching for a VCS
 
   static Future<Workspace> find(String filename) async {
+
+    //  Is this actually a directory name?
+
+    if (await Directory(filename).exists()) {
+      return findDir(filename, ".git");
+    }
+
     return findDir(filename.substring(0, filename.lastIndexOf(dirChar)), ".git");
   }
 
