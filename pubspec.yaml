@@ -2,7 +2,7 @@ name: yellow_snow
 description: See where your fellow developers left their mark
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 0.1.1
+version: 0.2.0
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -14,7 +14,7 @@ dependencies:
   draggable_scrollbar: ^0.0.4
   shared_preferences: ^0.5.12
   image: ^2.1.18
-  filepicker_windows: ^1.0.0
+  filepicker_windows: ^2.0.0
   easy_localization: ^2.3.3
   awesome_dialog: ^1.2.1
   yaml: ^2.2.1
