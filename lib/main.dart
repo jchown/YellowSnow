@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:yaml/yaml.dart';
+import 'package:yellow_snow/render_style.dart';
 
 import 'annotations.dart';
 import 'annotate_git.dart';
@@ -23,19 +24,21 @@ import 'top_row.dart';
 import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
 
   final path = arguments.length > 0 ? arguments[1] : Directory.current.absolute.path + Workspace.dirChar;
 
-  runApp(YellowSnowApp.ofPath(path));
+  await EasyLocalization.ensureInitialized();
+  var renderStyle = await RenderStyle.load();
+
+  runApp(YellowSnowApp(renderStyle: renderStyle, initialPath: path));
 }
 
 class YellowSnowApp extends StatelessWidget {
-  final String initialPath;
+  final String? initialPath;
+  final RenderStyle renderStyle;
 
-  YellowSnowApp() : initialPath = null;
-
-  YellowSnowApp.ofPath(this.initialPath);
+  YellowSnowApp({required this.renderStyle, this.initialPath});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class YellowSnowApp extends StatelessWidget {
             primarySwatch: Colors.blueGrey,
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: MainPage(filename: initialPath),
+          home: MainPage(filename: initialPath, renderStyle: renderStyle),
         ));
   }
 }
@@ -60,57 +63,50 @@ class FileOpenIntent extends Intent {
 }
 
 class MainPage extends StatefulWidget {
-  MainPage({Key key, this.filename}) : super(key: key);
+  MainPage({Key? key, this.filename, required this.renderStyle}) : super(key: key);
 
   final History _history = new History();
-  final String filename;
+  final String? filename;
+  final RenderStyle renderStyle;
 
   @override
-  _MainPageState createState() => _MainPageState(filename, _history);
+  _MainPageState createState() => _MainPageState(filename, _history, renderStyle);
 }
 
 class _MainPageState extends State<MainPage> {
   History _history;
-  String filename;
-  Workspace workspace;
-  Annotations annotations;
-  cs.ColorScheme _colorScheme;
+  String? filename;
+  Workspace? workspace;
+  Annotations? annotations;
 
-  static const String fontSizePrefsKey = "fontSize";
-  static const double defaultFontSize = 12;
-  double _fontSize;
-
-  static const String tabSizePrefsKey = "tabSize";
-  static const int defaultTabSize = 4;
-  int _tabSize;
+  RenderStyle renderStyle;
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   final GlobalKey listKey = GlobalKey();
   final ScrollController linesViewController = ScrollController();
   var _shortcutManager = ShortcutManager();
 
-  ListView lines;
-  AnnotationMap map;
-  AnnotationZone zone;
-  String annotatingSha;
-  String annotatingNextSha;
+  ListView? lines;
+  AnnotationMap? map;
+  late AnnotationZone zone;
+  String? annotatingSha;
+  String? annotatingNextSha;
 
-  _MainPageState(this.filename, this._history) {
+  _MainPageState(this.filename, this._history, this.renderStyle) {
     annotations = Annotations.pending();
     workspace = null;
-    _colorScheme = null;
     linesViewController.addListener(onScrollChanged);
-    load(filename);
+    load(filename!);
   }
 
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+    WidgetsBinding.instance!.addPostFrameCallback((_) => onLayout());
   }
 
   void onLayout() {
     updateZone();
-    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+    WidgetsBinding.instance!.addPostFrameCallback((_) => onLayout());
   }
 
   void _handleChangedFilename(String filename) {
@@ -123,8 +119,10 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> load(String filename, {bool addToHistory = true}) async {
     var history = _history;
-    var fPrefs = SharedPreferences.getInstance();
     var newWorkspace = await Workspace.find(filename);
+    if (newWorkspace == null)
+      throw new Exception();
+
     this.filename = filename;
     if (addToHistory) {
       _history.push(filename);
@@ -134,7 +132,6 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       workspace = newWorkspace;
       annotations = Annotations.pending();
-      _colorScheme = null;
       annotatingSha = null;
       annotatingNextSha = null;
       linesViewController.position.jumpTo(0);
@@ -142,20 +139,10 @@ class _MainPageState extends State<MainPage> {
     });
 
     var newAnnotations = await AnnotateGit.getAnnotations(newWorkspace, filename);
-    var prefs = await fPrefs;
-    var newTheme = ColorSchemes.get(prefs);
-    _fontSize = prefs.containsKey(fontSizePrefsKey)
-        ? prefs.getDouble(fontSizePrefsKey)
-        : defaultFontSize;
-
-    _tabSize = prefs.containsKey(tabSizePrefsKey)
-        ? prefs.getInt(tabSizePrefsKey)
-        : defaultTabSize;
 
     setState(() {
       workspace = newWorkspace;
       annotations = newAnnotations;
-      _colorScheme = newTheme;
       _history = history;
     });
   }
@@ -164,7 +151,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     var titleStyle = TextStyle(color: Colors.white, fontSize: 20);
     var subtitleStyle = TextStyle(color: Colors.white, fontSize: 12);
-    var currentFontSize = _fontSize ?? defaultFontSize;
+    var currentFontSize = renderStyle.fontSize;
     var drawerItems = Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -236,7 +223,7 @@ class _MainPageState extends State<MainPage> {
     );
 
     var mainView = Container(
-        color: _colorScheme?.getBGColor(0),
+        color: renderStyle.colorScheme.getBGColor(0),
         child: Row(children: <Widget>[
           Expanded(
             child: DraggableScrollbar.semicircle(
@@ -244,14 +231,14 @@ class _MainPageState extends State<MainPage> {
               controller: linesViewController,
               child: lines = ListView.builder(
                   key: listKey,
-                  itemCount: annotations.lines.length,
+                  itemCount: annotations!.lines.length,
                   controller: linesViewController,
                   itemBuilder: (context, i) {
-                    var line = annotations.lines[i];
+                    var line = annotations!.lines[i];
                     return GestureDetector(
                         onTap: () => handleLineClick(line),
                         child: line.getWidget(
-                            annotations, _colorScheme, _fontSize, _tabSize));
+                            annotations!, renderStyle));
                   }),
             ),
           ),
@@ -266,8 +253,8 @@ class _MainPageState extends State<MainPage> {
                       height: double.infinity,
                       width: double.infinity,
                       child: Stack(fit: StackFit.expand, children: <Widget>[
-                        map = AnnotationMap(annotations, _colorScheme),
-                        zone = AnnotationZone(annotations, _colorScheme)
+                        map = AnnotationMap(annotations!, renderStyle.colorScheme),
+                        zone = AnnotationZone(annotations!, renderStyle.colorScheme)
                       ]))))
         ]));
 
@@ -279,7 +266,7 @@ class _MainPageState extends State<MainPage> {
         onHistoryChangedFilename: _handleHistoryChangedFilename,
         onTappedMenu: _handleTappedMenu);
 
-    var rows = List<Widget>();
+    var rows = List<Widget>.empty(growable: true);
     rows.add(topRow);
     rows.add(Expanded(child: mainView));
 
@@ -308,26 +295,17 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> setColourScheme(String schemeID) async {
-    var oldWorkspace = workspace;
-    var oldAnnotations = annotations;
-    var newColorScheme =
-        ColorSchemes.set(await SharedPreferences.getInstance(), schemeID);
-    var history = _history;
-
     setState(() {
-      workspace = oldWorkspace;
-      annotations = oldAnnotations;
-      _colorScheme = newColorScheme;
-      _history = history;
+      renderStyle = renderStyle.withColorSchemeID(schemeID);
     });
   }
 
   Future<void> setFontHeight(double fontSize) async {
-    SharedPreferences.getInstance()
-        .then((prefs) => prefs.setDouble(fontSizePrefsKey, fontSize));
+
+    var rs = await renderStyle.setFontHeight(fontSize);
 
     setState(() {
-      _fontSize = fontSize;
+      renderStyle = rs;
     });
   }
 
@@ -336,7 +314,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   void updateZone() {
-    final box = listKey.currentContext.findRenderObject() as RenderBox;
+    final box = listKey.currentContext!.findRenderObject() as RenderBox;
     var height = box.size.height;
     var extent = linesViewController.position.maxScrollExtent;
     var offset = linesViewController.offset;
@@ -370,23 +348,24 @@ class _MainPageState extends State<MainPage> {
   }
 
   void handleLineClick(Line line) {
-    if (line.getFilename() != null) load(line.getFilename());
+    load(line.getFilename());
   }
 
   handleMapTap(Offset position) {
-    final box = listKey.currentContext.findRenderObject() as RenderBox;
+    final box = listKey.currentContext!.findRenderObject() as RenderBox;
     var height = box.size.height;
     var extent = linesViewController.position.maxScrollExtent;
     var pos = extent * position.dy / height;
 
-    linesViewController.position.jumpTo(pos.clamp(0, extent.toInt()));
+    linesViewController.position.jumpTo(pos.clamp(0.0, extent.toInt() as double));
   }
 
   void _handleTappedMenu() {
-    scaffoldKey.currentState.openDrawer();
+    scaffoldKey.currentState!.openDrawer();
   }
 
-  void onTimelineChanged(String sha) async {
+  void onTimelineChanged(String? sha) async {
+
     if (annotatingSha != null) {
       //  Already doing something, we'll be next
       annotatingNextSha = sha;
@@ -395,7 +374,6 @@ class _MainPageState extends State<MainPage> {
 
     try {
       annotatingSha = sha;
-      var history = _history;
 
       var childAnnotations =
           await (annotations as AnnotationsFile).getChildAnnotations(sha);
@@ -407,14 +385,11 @@ class _MainPageState extends State<MainPage> {
       //  We're still the required sha
 
       setState(() {
-        workspace = workspace;
         annotations = childAnnotations;
-        _colorScheme = _colorScheme;
         annotatingSha = null;
-        _history = history;
       });
     } catch (e) {
-      //  Failed or overtkane
+      //  Failed or overtaken
 
       annotatingSha = null;
 

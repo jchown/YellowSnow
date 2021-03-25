@@ -45,15 +45,15 @@ class ColorScheme {
     return Color.fromARGB(0xff, r.toInt(), g.toInt(), b.toInt());
   }
 
-  Image _image;
-  Completer<Image> _rendering;
+  Image? _image;
+  Completer<Image>? _rendering;
 
   Future<Image> getThumbnail() async {
     if (_image != null)
       return Future.value(_image);
 
     if (_rendering != null)
-      return _rendering.future;
+      return _rendering!.future;
 
     _rendering = Completer<Image>();
 
@@ -74,12 +74,12 @@ class ColorScheme {
     }
 
     decodeImageFromPixels(pixels, w, h, PixelFormat.rgba8888, callback);
-    return _rendering.future;
+    return _rendering!.future;
   }
 
   callback(Image image) {
     this._image = image;
-    _rendering.complete(image);
+    _rendering!.complete(image);
     _rendering = null;
   }
 }

@@ -6,18 +6,18 @@ import 'history.dart';
 
 class TopRow extends StatelessWidget {
   const TopRow(
-      {Key key,
-      @required this.history,
-      @required this.workspace,
-      @required this.filename,
-      @required this.onChangedFilename,
-      @required this.onHistoryChangedFilename,
-      @required this.onTappedMenu})
+      {Key? key,
+      required this.history,
+      required this.workspace,
+      required this.filename,
+      required this.onChangedFilename,
+      required this.onHistoryChangedFilename,
+      required this.onTappedMenu})
       : super(key: key);
 
   final History history;
-  final Workspace workspace;
-  final String filename;
+  final Workspace? workspace;
+  final String? filename;
   final ValueChanged<String> onChangedFilename;
   final VoidCallback onHistoryChangedFilename;
   final VoidCallback onTappedMenu;
@@ -58,13 +58,13 @@ class TopRow extends StatelessWidget {
     if (filename != "" && workspace != null) {
       var style = TextStyle(color: Colors.white);
       topRowWidgets.add(OutlineButton(
-          child: Row(children: <Widget>[Icon(Icons.home, color: Colors.white), SizedBox(width: 8), Text(workspace.rootDir, style: style)]),
-          onPressed: () => onChangedFilename(workspace.rootDir)));
-      if (filename != workspace.rootDir) {
-        var segments = workspace.getRelativePath(filename).split(Workspace.dirChar);
+          child: Row(children: <Widget>[Icon(Icons.home, color: Colors.white), SizedBox(width: 8), Text(workspace!.rootDir, style: style)]),
+          onPressed: () => onChangedFilename(workspace!.rootDir)));
+      if (filename != workspace!.rootDir) {
+        var segments = workspace!.getRelativePath(filename!).split(Workspace.dirChar);
         for (int i = 0; i < segments.length; i++) {
           bool last = i == (segments.length - 1);
-          var path = workspace.getAbsolutePath(segments.getRange(0, i + 1).join(Workspace.dirChar));
+          var path = workspace!.getAbsolutePath(segments.getRange(0, i + 1).join(Workspace.dirChar));
           String segment = segments[i];
           if (!last) segment += Workspace.dirChar;
           topRowWidgets.add(OutlineButton(child: Text(segment, style: style), onPressed: () => onChangedFilename(path)));

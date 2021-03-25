@@ -4,10 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 class Timeline extends StatefulWidget {
-  Timeline(this.commits, this.onChangedCommit, {Key key}) : super(key: key);
+  Timeline(this.commits, this.onChangedCommit, {Key? key}) : super(key: key);
 
   final List<Change> commits;
-  final ValueChanged<String> onChangedCommit;
+  final ValueChanged<String?> onChangedCommit;
 
   @override
   _TimelineState createState() => _TimelineState(commits, commits.length - 1, onChangedCommit);
@@ -16,7 +16,7 @@ class Timeline extends StatefulWidget {
 class _TimelineState extends State<Timeline> {
   List<Change> _changes;
   int _change;
-  ValueChanged<String> _onChangedSha;
+  ValueChanged<String?> _onChangedSha;
 
   _TimelineState(this._changes, this._change, this._onChangedSha);
 

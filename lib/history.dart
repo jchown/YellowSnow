@@ -1,10 +1,8 @@
 class History {
-  List<String> filenames = new List();
+  List<String> filenames = List.empty(growable: true);
   int currentPos = - 1;
 
   void push(String filename) {
-    if (filename == null)
-      throw Exception();
     filenames.length = currentPos + 1;
     filenames.add(filename);
     currentPos = filenames.length - 1;

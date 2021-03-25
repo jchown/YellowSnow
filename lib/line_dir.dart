@@ -1,4 +1,5 @@
 import 'annotations.dart';
+import 'render_style.dart';
 import 'workspace.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -6,9 +7,9 @@ import 'line.dart';
 import 'color_scheme.dart';
 
 class LineDir extends Line {
-  String author;
+  String? author;
   String filename;
-  String subject;
+  String? subject;
 
   LineDir(this.filename, this.author, this.subject, int timestamp) {
     if (this.filename.contains("${Workspace.dirChar}${Workspace.dirChar}")) throw Exception("Bad filename: $filename");
@@ -21,10 +22,10 @@ class LineDir extends Line {
   }
 
   @override
-  Widget getWidget(Annotations annotations, ColorScheme theme, double fontHeight, int tabSize) {
+  Widget getWidget(Annotations annotations, RenderStyle renderStyle) {
     int level = annotations.getLevel(timestamp);
-    var bgCol = theme.getBGColor(level);
-    var fgCol = theme.getFGColor(level);
+    var bgCol = renderStyle.colorScheme.getBGColor(level);
+    var fgCol = renderStyle.colorScheme.getFGColor(level);
     return Row(children: <Widget>[
       SizedBox(
           width: 80,
@@ -35,7 +36,7 @@ class LineDir extends Line {
                   maxLines: 1,
                   overflow: TextOverflow.clip,
                   style:
-                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontHeight)))),
+                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: renderStyle.fontSize)))),
       SizedBox(
           width: 80,
           child: Container(
@@ -45,7 +46,7 @@ class LineDir extends Line {
                   maxLines: 1,
                   overflow: TextOverflow.clip,
                   style:
-                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontHeight)))),
+                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: renderStyle.fontSize)))),
       new Expanded(
           child: Container(
               color: bgCol,
@@ -54,7 +55,7 @@ class LineDir extends Line {
                   maxLines: 1,
                   textWidthBasis: TextWidthBasis.parent,
                   style:
-                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontHeight)))),
+                      TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: renderStyle.fontSize)))),
     ]);
   }
 }

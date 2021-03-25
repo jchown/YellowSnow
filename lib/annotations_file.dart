@@ -11,8 +11,8 @@ class AnnotationsFile extends Annotations {
   final List<Change> _changes;
   final Workspace _workspace;
   final String _filename;
-  final AnnotationsFile _parent;
-  final Map<String, AnnotationsFile> _children = Map();
+  final AnnotationsFile? _parent;
+  final Map<String?, AnnotationsFile> _children = Map();
 
   AnnotationsFile(this._workspace, this._filename, this._parent, this._changes, List<LineFile> lines) : super(lines);
 
@@ -25,8 +25,8 @@ class AnnotationsFile extends Annotations {
     return _changes;
   }
 
-  Future<AnnotationsFile> getChildAnnotations(String sha) async {
-    if (_parent != null) return _parent.getChildAnnotations(sha);
+  Future<AnnotationsFile?> getChildAnnotations(String? sha) async {
+    if (_parent != null) return _parent!.getChildAnnotations(sha);
 
     if (_children.containsKey(sha)) return _children[sha];
 
@@ -37,7 +37,7 @@ class AnnotationsFile extends Annotations {
   }
 
   AnnotationsFile getRoot() {
-    return (_parent == null) ? this : _parent.getRoot();
+    return (_parent == null) ? this : _parent!.getRoot();
   }
 
   /// What was this file called when the commit SHA occurred?
