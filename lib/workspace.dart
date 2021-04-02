@@ -7,13 +7,11 @@ class Workspace {
 
   String rootDir;
 
-  Workspace(String rootDir) {
-    this.rootDir = rootDir[rootDir.length - 1] == dirChar ? rootDir : rootDir + dirChar;
-  }
+  Workspace(String rootDir): rootDir = rootDir[rootDir.length - 1] == dirChar ? rootDir : rootDir + dirChar;
 
   /// Find a workspace root by searching for a VCS
 
-  static Future<Workspace> find(String filename) async {
+  static Future<Workspace?> find(String filename) async {
 
     //  Is this actually a directory name?
 
@@ -27,7 +25,7 @@ class Workspace {
   /// Find a workspace by searching for the given subdirectory (e.g. ".git")
   /// starting from the base directory and working upwards
 
-  static Future<Workspace> findDir(String baseDir, String dirName) async {
+  static Future<Workspace?> findDir(String baseDir, String dirName) async {
     var directory = "$baseDir$dirChar$dirName";
 
     if (await Directory(directory).exists()) {

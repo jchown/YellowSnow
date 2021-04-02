@@ -9,8 +9,8 @@ import 'workspace.dart';
 import 'exec.dart';
 
 class Change {
-  String sha;
-  int timestamp;
+  String? sha;
+  late int timestamp;
   String comment = "";
   String editor = "";
   String editorEmail = "";
@@ -35,11 +35,11 @@ class AnnotateGit {
       return getAnnotationsDir(workspace, filename);
   }
 
-  static Future<AnnotationsFile> getAnnotationsFile(AnnotationsFile parent, Workspace workspace, String filename, String sha) async {
+  static Future<AnnotationsFile> getAnnotationsFile(AnnotationsFile? parent, Workspace workspace, String filename, String? sha) async {
     var relFN = workspace.getRelativePath(filename);
     if (sha != null) {
       // Watch out for renames
-      relFN = parent.getShaFilename(sha);
+      relFN = parent!.getShaFilename(sha);
     }
 
     List<String> arguments = ["annotate", "-p", "-w", "--stat", relFN];
@@ -48,11 +48,11 @@ class AnnotateGit {
 
     var command = Exec.run(program, arguments, workspace.rootDir, {"GIT_PAGER": "cat"});
 
-    var lines = new List<LineFile>();
+    var lines = List<LineFile>.empty(growable: true);
     Map<String, Change> commits = Map();
 
     var firstLine = true;
-    var currentCommit = Change();
+    Change currentCommit = Change();
     var commandOutput = await command;
     for (var output in commandOutput) {
       if (output.length == 0) continue;
@@ -73,7 +73,7 @@ class AnnotateGit {
             currentCommit.sha = sha;
             commits[sha] = currentCommit;
           } else {
-            currentCommit = commits[sha];
+            currentCommit = commits[sha]!;
           }
 
           firstLine = false;
@@ -124,7 +124,7 @@ class AnnotateGit {
   }
 
   static Future<Annotations> getAnnotationsDir(Workspace workspace, String directory) async {
-    List<Future<LineDir>> files = new List<Future<LineDir>>();
+    List<Future<LineDir>> files = List<Future<LineDir>>.empty(growable: true);
 
     if (directory.endsWith(Workspace.dirChar))
       directory = directory.substring(0, directory.length - 1);
@@ -153,7 +153,7 @@ class AnnotateGit {
 
     var command = await Exec.run(program, arguments, workspace.rootDir, null);
 
-    String commitHash, authorName, authorEmail, editor = "?", subject = "";
+    String? commitHash, authorName, authorEmail, editor = "?", subject = "";
 
     for (String output in command) {
       if (output.length == 0) continue;
@@ -172,7 +172,7 @@ class AnnotateGit {
     }
 
     if (commitHash != null) {
-      editor = authorName;
+      editor = authorName ?? "";
       if (authorEmail != null) editor += " <$authorEmail>";
     } else {
       edited = 0;

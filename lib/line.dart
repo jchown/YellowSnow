@@ -1,13 +1,13 @@
-import 'color_scheme.dart';
 import 'package:flutter/widgets.dart';
 
 import 'annotations.dart';
+import 'render_style.dart';
 
 /// Base class of an annotated line
 abstract class Line {
-  int timestamp;
+  int timestamp = 0;
 
-  Widget getWidget(Annotations annotations, ColorScheme theme, double fontSize, int tabSize);
+  Widget getWidget(Annotations annotations, RenderStyle renderStyle);
 
   String getFilename();
 }

@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:yellow_snow/render_style.dart';
 
 import 'annotations.dart';
 import 'line.dart';
 import 'string_ext.dart';
-import 'color_scheme.dart' as cs;
 
 class LineFile extends Line {
   String author;
-  String email;
-  int lineNo;
+  String? email;
+  int? lineNo;
   String source;
   String comment;
 
@@ -20,14 +20,14 @@ class LineFile extends Line {
 
   @override
   String getFilename() {
-    return null;
+    return source;
   }
 
   @override
-  Widget getWidget(Annotations annotations, cs.ColorScheme theme, double fontSize, int tabSize) {
+  Widget getWidget(Annotations annotations, RenderStyle renderStyle) {
     int level = annotations.getLevel(timestamp);
-    var bgCol = theme.getBGColor(level);
-    var fgCol = theme.getFGColor(level);
+    var bgCol = renderStyle.colorScheme.getBGColor(level);
+    var fgCol = renderStyle.colorScheme.getFGColor(level);
     var dateFormat = DateFormat("yyyy.MM.dd HH:mm:ss");
 
     return Row(children: <Widget>[
@@ -41,16 +41,16 @@ class LineFile extends Line {
                   child: Text(author,
                       maxLines: 1,
                       overflow: TextOverflow.clip,
-                      style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontSize))))),
+                      style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: renderStyle.fontSize))))),
       SizedBox(width: 4),
       new Expanded(
           child: Container(
               color: bgCol,
               width: double.infinity,
-              child: Text(source.replaceTabs(tabSize),
+              child: Text(source.replaceTabs(renderStyle.tabSize),
                   maxLines: 1,
                   textWidthBasis: TextWidthBasis.parent,
-                  style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: fontSize)))),
+                  style: TextStyle(fontFamily: 'RobotoMono', backgroundColor: bgCol, color: fgCol, fontSize: renderStyle.fontSize)))),
       SizedBox(width: 4)
     ]);
   }

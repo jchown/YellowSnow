@@ -7,13 +7,13 @@ abstract class Annotations {
   String getSummary(int line);
 
   int getLevel(int timestamp) {
-    return _timeToLevel[timestamp];
+    return _timeToLevel[timestamp]!;
   }
 
   List<Line> get lines => _lines;
 
-  List<Line> _lines;
-  Map<int, int> _timeToLevel;
+  late List<Line> _lines;
+  late Map<int, int> _timeToLevel;
 
   Annotations(List<Line> lines) {
     this._lines = lines;
@@ -36,10 +36,9 @@ abstract class Annotations {
     int minTime = 1 << 62;
     int maxTime = -1 << 62;
 
-    var sorted = new List<int>();
+    var sorted = List<int>.empty(growable: true);
 
     for (int timestamp in timestamps) {
-      if (timestamp == null) throw Exception("Null time in timestamps");
       if (timestamp == 0)
         continue;
 
@@ -72,6 +71,10 @@ abstract class Annotations {
 
   static Annotations pending() {
     return new AnnotationsPending();
+  }
+
+  static Annotations? thumbnail() {
+    return null;
   }
 }
 

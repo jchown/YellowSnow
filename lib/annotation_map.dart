@@ -36,7 +36,7 @@ class RenderedMap extends RenderBox {
 
   Annotations annotations;
   cs.ColorScheme theme;
-  AnnotationMap widget;
+  late AnnotationMap widget;
 
   @override
   bool get sizedByParent => true;
@@ -46,9 +46,9 @@ class RenderedMap extends RenderBox {
     size = constraints.smallest;
   }
 
-  ui.Image image;
-  static ui.Image lastImage;
-  MapRenderer rendering;
+  ui.Image? image;
+  static ui.Image? lastImage;
+  MapRenderer? rendering;
 
   void paint(PaintingContext context, Offset offset) {
     if (annotations.lines.length == 0) {
@@ -61,8 +61,8 @@ class RenderedMap extends RenderBox {
 
     var w = size.width.floor();
     var h = size.height.floor();
-    if (image == null || image.width != w || image.height != h) {
-      if (rendering == null || rendering.w != w || rendering.h != h) {
+    if (image == null || image!.width != w || image!.height != h) {
+      if (rendering == null || rendering!.w != w || rendering!.h != h) {
         rendering = MapRenderer(this, w, h);
       }
     }
@@ -73,11 +73,11 @@ class RenderedMap extends RenderBox {
       }
       else {
         var paint = Paint();
-        context.canvas.drawImage(lastImage, offset, paint);
+        context.canvas.drawImage(lastImage!, offset, paint);
       }
     } else {
       var paint = Paint();
-      context.canvas.drawImage(image, offset, paint);
+      context.canvas.drawImage(image!, offset, paint);
     }
   }
 
@@ -90,7 +90,7 @@ class RenderedMap extends RenderBox {
   void paintEmpty(PaintingContext context, Offset offset) {
     image = null;
     var paint = Paint();
-    paint.color = theme?.bgOld ?? Colors.white;
+    paint.color = theme.bgOld;
     var rect = Rect.fromPoints(offset.translate(0, 0), offset.translate(size.width, size.height));
     context.canvas.drawRect(rect, paint);
   }
@@ -138,7 +138,7 @@ class RenderedZone extends RenderBox {
 
   Annotations annotations;
   cs.ColorScheme theme;
-  AnnotationZone widget;
+  AnnotationZone? widget;
 
   var zoneStart;
   var zoneHeight;
@@ -155,7 +155,7 @@ class RenderedZone extends RenderBox {
   void paint(PaintingContext context, Offset offset) {
     if (widget != null && totalHeight > 0) {
       var paint = Paint();
-      paint.color = theme?.fgOld ?? Colors.black;
+      paint.color = theme.fgOld;
       paint.style = PaintingStyle.stroke;
       paint.strokeWidth = 2;
       paint.strokeJoin = StrokeJoin.round;

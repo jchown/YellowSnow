@@ -5,15 +5,25 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:yellow_snow/main.dart';
+import 'package:yellow_snow/render_style.dart';
+import 'package:yellow_snow/workspace.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+
+    // Prerequisites
+    var renderStyle = await RenderStyle.load();
+
+    var path = Directory.current.absolute.path + Workspace.dirChar + "lib" + Workspace.dirChar + "main.dart";
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(YellowSnowApp());
+    await tester.pumpWidget(YellowSnowApp(renderStyle: renderStyle, initialPath: path));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
