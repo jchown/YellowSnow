@@ -35,10 +35,10 @@ void main(List<String> arguments) async {
 }
 
 class YellowSnowApp extends StatelessWidget {
-  final String? initialPath;
+  final String initialPath;
   final RenderStyle renderStyle;
 
-  YellowSnowApp({required this.renderStyle, this.initialPath});
+  YellowSnowApp({required this.renderStyle, required this.initialPath});
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +63,10 @@ class FileOpenIntent extends Intent {
 }
 
 class MainPage extends StatefulWidget {
-  MainPage({Key? key, this.filename, required this.renderStyle}) : super(key: key);
+  MainPage({Key? key, required this.filename, required this.renderStyle}) : super(key: key);
 
   final History _history = new History();
-  final String? filename;
+  final String filename;
   final RenderStyle renderStyle;
 
   @override
@@ -75,7 +75,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   History _history;
-  String? filename;
+  String filename;
   Workspace? workspace;
   Annotations? annotations;
 
@@ -96,7 +96,7 @@ class _MainPageState extends State<MainPage> {
     annotations = Annotations.pending();
     workspace = null;
     linesViewController.addListener(onScrollChanged);
-    load(filename!);
+    load(filename);
   }
 
   void initState() {
@@ -357,7 +357,7 @@ class _MainPageState extends State<MainPage> {
     var extent = linesViewController.position.maxScrollExtent;
     var pos = extent * position.dy / height;
 
-    linesViewController.position.jumpTo(pos.clamp(0.0, extent.toInt() as double));
+    linesViewController.position.jumpTo(pos.clamp(0.0, extent.floorToDouble()));
   }
 
   void _handleTappedMenu() {
