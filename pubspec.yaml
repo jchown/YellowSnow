@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   draggable_scrollbar:
-    path: S:/Work/3rdParty/flutter-draggable-scrollbar
+    path: deps/draggable-scrollbar
 
   shared_preferences: ^2.0.5
   image: ^3.0.2

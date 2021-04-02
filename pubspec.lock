@@ -74,8 +74,8 @@ packages:
   draggable_scrollbar:
     dependency: "direct main"
     description:
-      path: "S:/Work/3rdParty/flutter-draggable-scrollbar"
-      relative: false
+      path: "deps/draggable-scrollbar"
+      relative: true
     source: path
     version: "0.0.4"
   easy_localization:
