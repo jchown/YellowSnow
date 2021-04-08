@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:ffi';
+import 'package:ffi/ffi.dart';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:filepicker_windows/filepicker_windows.dart';
@@ -11,6 +15,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:yaml/yaml.dart';
 import 'package:yellow_snow/render_style.dart';
+import 'package:win32/win32.dart';
 
 import 'annotations.dart';
 import 'annotate_git.dart';
@@ -24,14 +29,67 @@ import 'top_row.dart';
 import 'color_schemes.dart';
 import 'color_scheme.dart' as cs;
 
+typedef GCL_Native = IntPtr Function();
+typedef GCL_Dart = int Function();
+
+typedef CL2A_Native = IntPtr Function(IntPtr cmdLine, IntPtr numArgs);
+typedef CL2A_Dart = int Function(int cmdLine, int numArgs);
+
 void main(List<String> arguments) async {
 
-  final path = arguments.length > 0 ? arguments[1] : Directory.current.absolute.path + Workspace.dirChar;
+  if (Platform.isWindows) { // TODO: Remove when arguments are passed correctly
+
+    developer.log("Args: " + arguments.join(","), name: 'yellowsnow.init');
+
+    arguments = getArgsWin32();
+  }
+
+  developer.log("Args: " + arguments.join(","), name: 'yellowsnow.init');
+
+  final path = arguments.length > 1 ? arguments[1] : Directory.current.absolute.path + Workspace.dirChar;
 
   await EasyLocalization.ensureInitialized();
   var renderStyle = await RenderStyle.load();
 
   runApp(YellowSnowApp(renderStyle: renderStyle, initialPath: path));
+}
+
+/// Read command line arguments using Win32 API.
+
+List<String> getArgsWin32() {
+  final _kernel32 = DynamicLibrary.open('kernel32.dll');
+  final _shell32 = DynamicLibrary.open('shell32.dll');
+
+  final getCommandLineW = _kernel32.lookupFunction<GCL_Native, GCL_Dart>('GetCommandLineW');
+  var cmdLine = Pointer<Uint16>.fromAddress(getCommandLineW());
+
+  final numArgs = calloc<Uint32>(1);
+  final commandLineToArgvW = _shell32.lookupFunction<CL2A_Native, CL2A_Dart>('CommandLineToArgvW');
+  var argV = Pointer<Pointer<Uint16>>.fromAddress(commandLineToArgvW(cmdLine.address, numArgs.address));
+
+  developer.log("Win32 num args: " + numArgs.value.toString(), name: 'yellowsnow.init');
+
+  List<String> args = [];
+  for (int i = 0; i < numArgs.value; i++) {
+    var lpwstr = argV.elementAt(i).value;
+    args.add(fromLPWSTR(lpwstr));
+  }
+
+  free(numArgs);
+  free(argV);
+  return args;
+}
+
+/// Read a null terminated wide string into Dart.
+
+String fromLPWSTR(Pointer<Uint16> lpwstr) {
+  String s = "";
+  int c;
+  int i = 0;
+  while ((c = lpwstr.elementAt(i++).value) != 0) {
+    s += String.fromCharCode(c);
+  }
+  return s;
 }
 
 class YellowSnowApp extends StatelessWidget {

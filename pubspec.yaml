@@ -20,6 +20,7 @@ dependencies:
   easy_localization: ^3.0.0
   awesome_dialog: ^2.0.0-nullsafety.0
   yaml: ^3.1.0
+  win32: ^2.0.5
 
 dev_dependencies:
   flutter_test:

@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:developer' as developer;
 
 class Exec {
+
   static Future<List<String>> run(String program, List<String> arguments, String workingDirectory, Map<String,String>? environment) async {
 
-//    stdout.write("> $program ${arguments.join(' ')}\n");
+    developer.log("$program " + arguments.join(","), name: 'yellowsnow.exec');
 
     var process = await Process.start(program, arguments,
         workingDirectory: workingDirectory,
