@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:yaml/yaml.dart';
@@ -26,8 +25,6 @@ import 'annotations_file.dart';
 import 'line.dart';
 import 'timeline.dart';
 import 'top_row.dart';
-import 'color_schemes.dart';
-import 'color_scheme.dart' as cs;
 
 typedef GCL_Native = IntPtr Function();
 typedef GCL_Dart = int Function();
@@ -36,8 +33,8 @@ typedef CL2A_Native = IntPtr Function(IntPtr cmdLine, IntPtr numArgs);
 typedef CL2A_Dart = int Function(int cmdLine, int numArgs);
 
 void main(List<String> arguments) async {
-
-  if (Platform.isWindows) { // TODO: Remove when arguments are passed correctly
+  if (Platform.isWindows) {
+    // TODO: Remove when arguments are passed correctly
 
     developer.log("Args: " + arguments.join(","), name: 'yellowsnow.init');
 
@@ -48,10 +45,16 @@ void main(List<String> arguments) async {
 
   final path = arguments.length > 1 ? arguments[1] : Directory.current.absolute.path + Workspace.dirChar;
 
+  WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  initializeDateFormatting(null, null);
   var renderStyle = await RenderStyle.load();
 
-  runApp(YellowSnowApp(renderStyle: renderStyle, initialPath: path));
+  runApp(EasyLocalization(
+      supportedLocales: [Locale('en', 'US'), Locale('en', 'GB')],
+      path: 'assets/translations',
+      fallbackLocale: Locale('en', 'US'),
+      child: YellowSnowApp(renderStyle: renderStyle, initialPath: path)));
 }
 
 /// Read command line arguments using Win32 API.
@@ -100,19 +103,14 @@ class YellowSnowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    initializeDateFormatting(null, null);
-    return EasyLocalization(
-        supportedLocales: [Locale('en', 'US'), Locale('en', 'GB')],
-        path: 'assets/translations',
-        fallbackLocale: Locale('en', 'US'),
-        child: MaterialApp(
-          title: 'Yellow Snow',
-          theme: ThemeData(
-            primarySwatch: Colors.blueGrey,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          home: MainPage(filename: initialPath, renderStyle: renderStyle),
-        ));
+    return MaterialApp(
+      title: 'Yellow Snow',
+      theme: ThemeData(
+        primarySwatch: Colors.blueGrey,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MainPage(filename: initialPath, renderStyle: renderStyle),
+    );
   }
 }
 
@@ -178,8 +176,7 @@ class _MainPageState extends State<MainPage> {
   Future<void> load(String filename, {bool addToHistory = true}) async {
     var history = _history;
     var newWorkspace = await Workspace.find(filename);
-    if (newWorkspace == null)
-      throw new Exception();
+    if (newWorkspace == null) throw new Exception();
 
     this.filename = filename;
     if (addToHistory) {
@@ -220,39 +217,28 @@ class _MainPageState extends State<MainPage> {
                 child: Column(children: <Widget>[
                   Text('Yellow Snow', style: titleStyle),
                   Align(
-                      child: Text(
-                          '\nSee where your fellow developers left their mark',
-                          style: subtitleStyle,
-                          textAlign: TextAlign.center))
+                      child: Text('\nSee where your fellow developers left their mark',
+                          style: subtitleStyle, textAlign: TextAlign.center))
                 ]),
                 decoration: BoxDecoration(
                   color: Colors.blueGrey,
                 ),
               )),
-          ListTile(
-              leading: Icon(Icons.folder_open),
-              title: Text('Open File'),
-              onTap: onOpenFile),
+          ListTile(leading: Icon(Icons.folder_open), title: Text('Open File'), onTap: onOpenFile),
           ExpansionTile(
             leading: Icon(Icons.color_lens),
             title: Text("t_ColorScheme").tr(),
             children: <Widget>[
               ListTile(
                 title: Text('Yellow Snow'),
-                leading: Image(
-                    image: AssetImage("assets/images/YS.png"),
-                    width: 20,
-                    height: 20),
+                leading: Image(image: AssetImage("assets/images/YS.png"), width: 20, height: 20),
                 onTap: () {
                   setColourScheme("YS");
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Image(
-                    image: AssetImage("assets/images/PS.png"),
-                    width: 20,
-                    height: 20),
+                leading: Image(image: AssetImage("assets/images/PS.png"), width: 20, height: 20),
                 title: Text('Purple Stain'),
                 onTap: () {
                   setColourScheme("PS");
@@ -269,13 +255,9 @@ class _MainPageState extends State<MainPage> {
                     value: currentFontSize,
                     min: 6,
                     max: 20,
-                    onChanged: (double value) =>
-                        setFontHeight((value * 10).floorToDouble() / 10))
+                    onChanged: (double value) => setFontHeight((value * 10).floorToDouble() / 10))
               ]),
-          ListTile(
-              leading: Icon(Icons.info),
-              title: Text('About YellowSnow'),
-              onTap: onAbout),
+          ListTile(leading: Icon(Icons.info), title: Text('About YellowSnow'), onTap: onAbout),
         ],
       ),
     );
@@ -294,9 +276,7 @@ class _MainPageState extends State<MainPage> {
                   itemBuilder: (context, i) {
                     var line = annotations!.lines[i];
                     return GestureDetector(
-                        onTap: () => handleLineClick(line),
-                        child: line.getWidget(
-                            annotations!, renderStyle));
+                        onTap: () => handleLineClick(line), child: line.getWidget(annotations!, renderStyle));
                   }),
             ),
           ),
@@ -304,8 +284,7 @@ class _MainPageState extends State<MainPage> {
               width: 60,
               child: Listener(
                   onPointerDown: (pd) => handleMapTap(pd.localPosition),
-                  onPointerMove: (pm) =>
-                      {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
+                  onPointerMove: (pm) => {if (pm.buttons != 0) handleMapTap(pm.localPosition)},
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                       height: double.infinity,
@@ -331,9 +310,7 @@ class _MainPageState extends State<MainPage> {
     if (annotations is AnnotationsFile) {
       var bottomRow = Container(
           color: Colors.blueGrey,
-          child: Timeline(
-              (annotations as AnnotationsFile).getRoot().getChanges(),
-              onTimelineChanged));
+          child: Timeline((annotations as AnnotationsFile).getRoot().getChanges(), onTimelineChanged));
       rows.add(bottomRow);
     }
 
@@ -343,12 +320,10 @@ class _MainPageState extends State<MainPage> {
         body: Shortcuts(
             manager: _shortcutManager,
             shortcuts: <LogicalKeySet, Intent>{
-              LogicalKeySet(
-                      LogicalKeyboardKey.control, LogicalKeyboardKey.keyO):
-                  FileOpenIntent()            },
+              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyO): FileOpenIntent()
+            },
             child: Actions(actions: <Type, Action<Intent>>{
-              FileOpenIntent: CallbackAction<FileOpenIntent>(
-                  onInvoke: (FileOpenIntent intent) => onOpenFile()),
+              FileOpenIntent: CallbackAction<FileOpenIntent>(onInvoke: (FileOpenIntent intent) => onOpenFile()),
             }, child: Focus(autofocus: true, child: Column(children: rows)))));
   }
 
@@ -359,7 +334,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> setFontHeight(double fontSize) async {
-
     var rs = await renderStyle.setFontHeight(fontSize);
 
     setState(() {
@@ -382,8 +356,7 @@ class _MainPageState extends State<MainPage> {
   Future<void> onHome() async {}
 
   Future<void> onOpenFile() async {
-    var picker = OpenFilePicker()
-      ..title = "Choose File";
+    var picker = OpenFilePicker()..title = "Choose File";
 //      ..folder = filename != null ? filename.substring(0, filename.lastIndexOf(Workspace.dirChar)) : null;
 
     var file = picker.getFile();
@@ -391,18 +364,17 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> onAbout() async {
-
     var pubspec = await rootBundle.loadString("pubspec.yaml");
     var yaml = loadYaml(pubspec);
     var version = yaml["version"];
 
     AwesomeDialog(
-            context: context,
-            dialogType: DialogType.NO_HEADER,
-            title: 'About YellowSnow',
-            desc: '\nAuthor: Jason Chown\n\nVersion: $version\n',
-            btnOkOnPress: () {},
-            )..show();
+      context: context,
+      dialogType: DialogType.NO_HEADER,
+      title: 'About YellowSnow',
+      desc: '\nAuthor: Jason Chown\n\nVersion: $version\n',
+      btnOkOnPress: () {},
+    )..show();
   }
 
   void handleLineClick(Line line) {
@@ -423,7 +395,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   void onTimelineChanged(String? sha) async {
-
     if (annotatingSha != null) {
       //  Already doing something, we'll be next
       annotatingNextSha = sha;
@@ -433,8 +404,7 @@ class _MainPageState extends State<MainPage> {
     try {
       annotatingSha = sha;
 
-      var childAnnotations =
-          await (annotations as AnnotationsFile).getChildAnnotations(sha);
+      var childAnnotations = await (annotations as AnnotationsFile).getChildAnnotations(sha);
 
       if (annotatingSha != sha) {
         throw Exception("Overtaken");
