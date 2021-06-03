@@ -14,7 +14,7 @@ packages:
       name: args
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "2.1.1"
   async:
     dependency: transitive
     description:
@@ -28,7 +28,7 @@ packages:
       name: awesome_dialog
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0-nullsafety.0"
+    version: "2.1.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -70,14 +70,14 @@ packages:
       name: crypto
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   draggable_scrollbar:
     dependency: "direct main"
     description:
-      path: "deps/draggable-scrollbar"
-      relative: true
-    source: path
-    version: "0.0.4"
+      name: draggable_scrollbar
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   easy_localization:
     dependency: "direct main"
     description:
@@ -105,14 +105,14 @@ packages:
       name: ffi
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.1"
   file:
     dependency: transitive
     description:
       name: file
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.1.0"
+    version: "6.1.1"
   filepicker_windows:
     dependency: "direct main"
     description:
@@ -126,7 +126,7 @@ packages:
       name: flare_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0-nullsafety.1"
+    version: "3.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -209,7 +209,7 @@ packages:
       name: path_provider_windows
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.1"
   pedantic:
     dependency: transitive
     description:
@@ -223,7 +223,7 @@ packages:
       name: petitparser
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.2"
+    version: "4.1.0"
   platform:
     dependency: transitive
     description:
@@ -244,14 +244,14 @@ packages:
       name: process
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.1"
+    version: "4.2.1"
   shared_preferences:
     dependency: "direct main"
     description:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.5"
+    version: "2.0.6"
   shared_preferences_linux:
     dependency: transitive
     description:
@@ -293,7 +293,7 @@ packages:
       name: simple_animations
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.3"
+    version: "3.1.1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -389,7 +389,7 @@ packages:
       name: xml
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.0.2"
+    version: "5.1.1"
   yaml:
     dependency: "direct main"
     description:
